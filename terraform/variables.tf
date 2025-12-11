@@ -3,3 +3,9 @@ variable "tailscale_key" {
   type        = string
   sensitive   = true 
 }
+
+variable "db_password" {
+  description = "RDS 비밀번호"
+  type        = string
+  sensitive   = true
+}
