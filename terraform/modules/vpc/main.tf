@@ -44,3 +44,30 @@ resource "aws_route_table_association" "public" { # Public 서브넷들과 라�
     subnet_id      = aws_subnet.public[count.index].id
     route_table_id = aws_route_table.public.id
 }
+
+// Private Subnet 관련 리소스
+resource "aws_subnet" "private" {
+    vpc_id            = aws_vpc.main.id
+    count             = length(var.availability_zones)
+    cidr_block        = var.private_subnet_cidrs[count.index]
+    availability_zone = var.availability_zones[count.index]
+    map_public_ip_on_launch = false # 인터넷 접근 불가능하게 설정
+
+    tags = {
+        Name = "${var.project_name}-private-subnet-${count.index + 1}"
+    }
+}
+
+resource "aws_route_table" "private" { # Private 라우트 테이블 생성 (기본: VPC 내부 통신만 가능)
+    vpc_id = aws_vpc.main.id
+
+    tags = {
+        Name = "${var.project_name}-private-rt"
+    }
+}
+
+resource "aws_route_table_association" "private" { # Private 서브넷들과 라우트 테이블 연결
+    count          = length(aws_subnet.private)
+    subnet_id      = aws_subnet.private[count.index].id
+    route_table_id = aws_route_table.private.id
+}

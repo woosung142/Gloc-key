@@ -8,6 +8,10 @@ variable "public_subnet_cidrs" {
   type        = list(string)
 }
 
+variable "private_subnet_cidrs" {
+  description = "Private 서브넷들의 IP 대역 리스트"
+  type        = list(string)
+}
 variable "availability_zones" {
   description = "사용할 가용 영역 리스트"
   type        = list(string)

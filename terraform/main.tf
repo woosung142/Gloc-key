@@ -6,12 +6,15 @@ module "vpc" {
 
     availability_zones  = ["ap-northeast-2a", "ap-northeast-2c"]
     public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+
+    private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
 }
 module "security" {
     source = "./modules/security"
 
     project_name = "gloc-key"
     vpc_id       = module.vpc.vpc_id
+
 
     admin_ip     = "1.241.176.242/32"
 }
@@ -46,6 +49,25 @@ module "ec2" {
   use_spot           = true
   key_name = aws_key_pair.kp.key_name
 }
+
+# 3. ★ 신규 RDS 모듈 추가
+module "rds" {
+  source = "./modules/rds"
+
+  project_name = "gloc-key"
+
+  # VPC 모듈에서 ID와 서브넷 가져오기
+  vpc_id       = module.vpc.vpc_id
+  private_subnet_ids   = module.vpc.private_subnet_ids # 혹은 public_subnet_ids
+
+  # EC2(보안) 모듈에서 EC2 보안 그룹 ID 가져오기
+  # (RDS가 EC2의 접속을 허용해야 하니까요)
+  app_sg_id    = module.security.sg_id
+
+  # 비밀번호는 tfvars나 환경변수에서 관리 추천
+  db_password  = var.db_password
+}
+
 
 # 최종 결과 출력
 output "final_connect_ip" {
