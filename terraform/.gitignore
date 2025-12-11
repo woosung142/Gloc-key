@@ -17,3 +17,6 @@ crash.*.log
 
 # Private modules and plugins cache
 .terraform/
+
+#ssh keys
+*.pem

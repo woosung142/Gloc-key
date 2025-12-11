@@ -1,0 +1,111 @@
+resource "aws_security_group" "main" { # 웹 및 관리자 트래픽 허용
+    name = "${var.project_name}-sg"
+    description = "Allow Web and Admin traffic"
+    vpc_id = var.vpc_id
+    tags = {
+        Name = "${var.project_name}-sg"
+    }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_https" { # HTTPS 트래픽 허용 (인바운드)
+    security_group_id = aws_security_group.main.id
+    description    = "HTTPS from Internet"
+
+    cidr_ipv4        = "0.0.0.0/0"
+    from_port       = 443
+    ip_protocol    = "tcp"
+    to_port         = 443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_http" {  # HTTP 트래픽 허용 (인바운드)
+    security_group_id = aws_security_group.main.id
+    description    = "HTTP from Internet"
+
+    cidr_ipv4        = "0.0.0.0/0"
+    from_port       = 80
+    ip_protocol    = "tcp"
+    to_port         = 80
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_ssh_admin" { # SSH 트래픽 허용 (인바운드) - 관리자
+    count = var.admin_ip != "" ? 1 : 0
+
+    security_group_id = aws_security_group.main.id
+    description    = "SSH for Admin"
+
+    cidr_ipv4     = var.admin_ip
+    from_port     = 22
+    ip_protocol   = "tcp"
+    to_port       = 22
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_k3s_admin" { # k3s API 트래픽 허용 (인바운드) - 관리자
+    count = var.admin_ip != "" ? 1 : 0
+
+    security_group_id = aws_security_group.main.id
+    description    = "K3s API for Admin"
+
+    cidr_ipv4     = var.admin_ip
+    from_port     = 6443
+    ip_protocol   = "tcp"
+    to_port       = 6443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_self" { # 보안 그룹 내의 인스턴스 간 통신 허용 (인바운드)
+    security_group_id = aws_security_group.main.id
+    description    = "Allow internal traffic"
+
+    referenced_security_group_id = aws_security_group.main.id
+    from_port                = -1
+    to_port                  = -1
+    ip_protocol              = "-1"
+}
+
+resource "aws_vpc_security_group_egress_rule" "allow_all_outbound" { # 모든 아웃바운드 트래픽 허용
+  security_group_id = aws_security_group.main.id
+  description       = "Allow all outbound traffic"
+  
+  cidr_ipv4   = "0.0.0.0/0"
+  ip_protocol = "-1"
+}
+
+resource "aws_iam_role" "ec2_role" { # EC2 인스턴스용 IAM 역할 생성
+    name = "${var.project_name}-ec2-role"
+    description = "IAM Role for EC2 Instance"
+    assume_role_policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+            {
+                Action = "sts:AssumeRole"
+                Effect = "Allow"
+                Principal = {
+                    Service = "ec2.amazonaws.com"
+                }
+            }
+        ]
+    })
+}
+
+resource "aws_iam_role_policy" "eip_stealing_policy" { # EC2 인스턴스가 Elastic IP를 연결/해제할 수 있는 권한 부여
+    name = "eip-stealing-policy"
+    role = aws_iam_role.ec2_role.id
+
+    policy = jsonencode({
+        Version = "2012-10-17"
+        Statement = [
+            {
+                Effect = "Allow"
+                Action = [
+                    "ec2:AssociateAddress",
+                    "ec2:DescribeAddresses"
+                ]
+                Resource = "*"
+            }
+        ]
+    })
+}
+
+resource "aws_iam_instance_profile" "main" { # IAM 인스턴스 프로파일 생성
+  name = "${var.project_name}-profile"
+  role = aws_iam_role.ec2_role.name
+}
