@@ -71,8 +71,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           # ★ 중요: 각 서비스 폴더 안에 Dockerfile이 있어야 합니다.
-          context: ./${{ ./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}
-          file: ./${{./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}/Dockerfile
+          context: ./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}
+          file: ./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}/Dockerfile
           push: true
           # ARM 제거, AMD64(일반 서버) 전용으로 설정
           platforms: linux/amd64
