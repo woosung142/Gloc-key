@@ -68,13 +68,6 @@ module "rds" {
   db_password  = var.db_password
 }
 
-
-# 최종 결과 출력
-output "final_connect_ip" {
-  value = aws_eip.k3s_ip.public_ip
-  description = "접속할 고정 IP (Tailscale이 안 될 경우 이 IP 사용)"
-}
-
 resource "tls_private_key" "pk" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -105,7 +98,4 @@ module "ecr" {
   for_each = toset(local.ecr_repos)
   project_name = "gloc-key"
   repo_name    = each.key
-}
-output "ecr_urls" {
-  value = [for r in module.ecr : r.repository_url]
 }
