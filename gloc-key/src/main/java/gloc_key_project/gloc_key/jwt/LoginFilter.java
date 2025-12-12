@@ -36,7 +36,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             FilterChain chain,
             Authentication authResult
     ) {
-        
+        System.out.println("Login Success");
     }
 
     // 로그인 실패 시
@@ -47,5 +47,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             AuthenticationException failed
     ) {
 
+        System.out.println("Login Failed");
     }
 }
