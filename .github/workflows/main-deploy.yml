@@ -107,7 +107,7 @@ jobs:
 
           # ★ 핵심: yq로 kustomization.yaml 안의 이미지 태그만 쏙 변경
           # (기존 이미지 이름과 매칭되는 녀석을 찾아서 newTag를 업데이트)
-          yq e "(.images[] | select(.name == \"${FULL_IMAGE_NAME}\") | .newTag) = \"${NEW_TAG}\"" -i ${KUSTOMIZE_FILE}
+          yq e '(.images[] | select(.name == strenv(TARGET_IMAGE)) | .newTag) = strenv(IMAGE_TAG)' -i ${KUSTOMIZE_FILE}
 
           # 변경 사항 커밋 & 푸시
           git add ${KUSTOMIZE_FILE}
