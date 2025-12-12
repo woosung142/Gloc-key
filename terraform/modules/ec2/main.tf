@@ -19,6 +19,9 @@ resource "aws_instance" "k3s_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3a.large" # 2 vCPU, 8GB RAM
   key_name = var.key_name
+  lifecycle {
+    ignore_changes = [ami, user_data]
+    }
 
   # 서브넷 선택: 리스트 중 첫 번째(a존)에 시도
   subnet_id = var.subnet_ids[0]

@@ -109,3 +109,20 @@ resource "aws_iam_instance_profile" "main" { # IAM 인스턴스 프로파일 생
   name = "${var.project_name}-profile"
   role = aws_iam_role.ec2_role.name
 }
+
+resource "aws_iam_user" "cicd_bot" {
+    name = "${var.project_name}-cicd-bot"
+
+    tags = {
+        Name = "${var.project_name}-cicd-bot"
+    }
+}
+
+resource "aws_iam_user_policy_attachment" "cicd_ecr_policy" {
+    user = aws_iam_user.cicd_bot.name
+    policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryPowerUser"
+}
+
+resource "aws_iam_access_key" "cicd_bot_key" {
+    user = aws_iam_user.cicd_bot.name
+}

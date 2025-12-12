@@ -68,13 +68,6 @@ module "rds" {
   db_password  = var.db_password
 }
 
-
-# 최종 결과 출력
-output "final_connect_ip" {
-  value = aws_eip.k3s_ip.public_ip
-  description = "접속할 고정 IP (Tailscale이 안 될 경우 이 IP 사용)"
-}
-
 resource "tls_private_key" "pk" {
   algorithm = "RSA"
   rsa_bits  = 4096
@@ -89,4 +82,20 @@ resource "local_file" "ssh_key" {
   filename        = "${path.module}/gloc-key.pem"
   content         = tls_private_key.pk.private_key_pem
   file_permission = "0600"
+}
+
+# ECR 리포지토리들 생성
+locals {
+  ecr_repos = [
+    "backend",
+    "frontend",
+    "ai-sd15"
+  ]
+}
+module "ecr" {
+  source = "./modules/ecr"
+  
+  for_each = toset(local.ecr_repos)
+  project_name = "gloc-key"
+  repo_name    = each.key
 }
