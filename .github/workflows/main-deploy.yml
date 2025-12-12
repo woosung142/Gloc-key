@@ -1,0 +1,116 @@
+name: Build, Push to ECR and Update Manifests
+
+on:
+  push:
+    branches:
+      - main
+      - feature/cicd  # 테스트용 브랜치
+
+# 권한 설정 (Git Push를 위해 필요)
+permissions:
+  contents: write
+
+jobs:
+  # 1. 변경된 폴더 감지 (backend, frontend, ai-sd15 중 어디가 변했나?)
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      service_changes: ${{ steps.filter.outputs.changes }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changed services
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # ★ 중요: 실제 폴더 구조와 매칭시켜야 합니다.
+          filters: |
+            backend:
+              - 'gloc-key/**'
+            frontend:
+              - 'frontend/**'
+            ai-sd15:
+              - 'ai-models/sd15/**' 
+
+  # 2. 변경된 서비스만 빌드 & ECR 푸시 & 매니페스트 업데이트
+  build-push-update:
+    needs: changes
+    if: ${{ needs.changes.outputs.service_changes != '[]' }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false # 하나가 실패해도 나머지는 계속 진행
+      matrix:
+        service: ${{ fromJson(needs.changes.outputs.service_changes) }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 3. AWS 권한 인증 (Terraform으로 만든 로봇 계정 사용)
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-northeast-2
+
+      # 4. ECR 로그인
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get short SHA
+        run: echo "SHORT_SHA=$(echo '${{ github.sha }}' | cut -c1-7)" >> $GITHUB_ENV
+
+      # 5. 도커 빌드 & ECR 푸시 (x86 아키텍처 전용)
+      - name: Build and Push image to ECR
+        uses: docker/build-push-action@v6
+        with:
+          # ★ 중요: 각 서비스 폴더 안에 Dockerfile이 있어야 합니다.
+          context: ./${{ matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}
+          file: ./${{ matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}/Dockerfile
+          push: true
+          # ARM 제거, AMD64(일반 서버) 전용으로 설정
+          platforms: linux/amd64
+          tags: |
+            ${{ steps.login-ecr.outputs.registry }}/${{ matrix.service }}:latest
+            ${{ steps.login-ecr.outputs.registry }}/${{ matrix.service }}:${{ github.ref_name }}-${{ env.SHORT_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 6. Kustomize 매니페스트 업데이트 (ArgoCD가 이걸 보고 배포함)
+      - name: Update Kustomize Manifest
+        if: github.ref_name == 'main'
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          # 변수 설정
+          NEW_TAG="${{ github.ref_name }}-${{ env.SHORT_SHA }}"
+          FULL_IMAGE_NAME="${ECR_REGISTRY}/${{ matrix.service }}"
+          
+          # Kustomize 파일 경로 (프로젝트 구조에 맞게 수정 필요)
+          KUSTOMIZE_FILE="k3s/overlays/prod/kustomization.yaml"
+
+          echo "Updating ${KUSTOMIZE_FILE} -> ${FULL_IMAGE_NAME}:${NEW_TAG}"
+
+          # Git 봇 설정
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # yq 설치 (YAML 수정 도구)
+          wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod a+x /usr/local/bin/yq
+
+          # ★ 핵심: yq로 kustomization.yaml 안의 이미지 태그만 쏙 변경
+          # (기존 이미지 이름과 매칭되는 녀석을 찾아서 newTag를 업데이트)
+          yq e "(.images[] | select(.name == \"${FULL_IMAGE_NAME}\") | .newTag) = \"${NEW_TAG}\"" -i ${KUSTOMIZE_FILE}
+
+          # 변경 사항 커밋 & 푸시
+          git add ${KUSTOMIZE_FILE}
+          # [skip ci]를 넣어서 무한 루프 방지
+          git commit -m "ci: Update ${{ matrix.service }} tag to ${NEW_TAG} [skip ci]" || echo "No changes to commit"
+          git push
