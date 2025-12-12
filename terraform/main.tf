@@ -90,3 +90,22 @@ resource "local_file" "ssh_key" {
   content         = tls_private_key.pk.private_key_pem
   file_permission = "0600"
 }
+
+# ECR 리포지토리들 생성
+locals {
+  ecr_repos = [
+    "backend",
+    "frontend",
+    "ai-sd15"
+  ]
+}
+module "ecr" {
+  source = "./modules/ecr"
+  
+  for_each = toset(local.ecr_repos)
+  project_name = "gloc-key"
+  repo_name    = each.key
+}
+output "ecr_urls" {
+  value = [for r in module.ecr : r.repository_url]
+}
