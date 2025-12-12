@@ -84,7 +84,7 @@ jobs:
 
       # 6. Kustomize 매니페스트 업데이트 (ArgoCD가 이걸 보고 배포함)
       - name: Update Kustomize Manifest
-        if: github.ref_name == 'main'
+        if: github.ref_name == 'main' || github.ref_name == 'cicd'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
