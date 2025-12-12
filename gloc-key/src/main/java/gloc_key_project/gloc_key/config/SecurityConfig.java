@@ -1,5 +1,6 @@
 package gloc_key_project.gloc_key.config;
 
+import gloc_key_project.gloc_key.jwt.JWTUtil;
 import gloc_key_project.gloc_key.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -18,7 +19,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+
     private final AuthenticationConfiguration authenticationConfiguration;
+    private final JWTUtil jwtUtil;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -51,7 +54,7 @@ public class SecurityConfig {
                 )
 
                 //로그인 필터 등록 (UsernamePasswordAuthenticationFilter 대체)
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration)), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class)
 
                 //세션 설정 STATELESS방식 사용
                 .sessionManagement((session) -> session
