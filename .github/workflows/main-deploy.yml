@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - feature/cicd  # 테스트용 브랜치
+      - cicd  # 테스트용 브랜치
 
 # 권한 설정 (Git Push를 위해 필요)
 permissions:
