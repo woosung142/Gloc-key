@@ -1,6 +1,9 @@
 package gloc_key_project.gloc_key.jwt;
 
 import gloc_key_project.gloc_key.dto.CustomUserDetails;
+import gloc_key_project.gloc_key.entity.RefreshToken;
+import gloc_key_project.gloc_key.entity.User;
+import gloc_key_project.gloc_key.repository.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +17,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -23,6 +28,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
@@ -47,8 +53,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     ) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
         // 사용자 username 추출
+        Long userId = customUserDetails.getId();
         String username = customUserDetails.getUsername();
-
+        Long user_id = customUserDetails.getId();
         Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
@@ -56,10 +63,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         // accessToken 15분
-        String accessToken = jwtUtil.creatJwt("access", username, role, 15 * 60 * 1000L);
+        String accessToken = jwtUtil.creatJwt("access",userId, username, role, 15 * 60 * 1000L);
 
         // refreshToken 2주
-        String refreshToken = jwtUtil.creatJwt("refresh", username, role, 14 * 24 * 60 * 60 * 1000L);
+        String refreshToken = jwtUtil.creatJwt("refresh", userId, username, role, 14 * 24 * 60 * 60 * 1000L);
+
+        // refreshToken 저장
+        long refreshTokenExpiredMs = 14 * 24 * 60 * 60 * 1000L;
+        saveRefreshToken(user_id, refreshToken, refreshTokenExpiredMs);
 
         // accessToken 헤더에 추가
         response.setHeader("access", accessToken);
@@ -95,4 +106,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         return cookie;
     }
 
+
+    // refresh token DB 저장 메서드
+    private void saveRefreshToken(Long user_id, String refreshToken, Long expiredMs)  {
+
+        // User 엔티티를 프록시(참조)로 가져옴.
+        User user = User.builder().id(user_id).build();
+
+        // 만료시간
+        LocalDateTime expiration = LocalDateTime.now().plus(expiredMs, ChronoUnit.MILLIS);
+
+        // 객체 생성
+        RefreshToken token = RefreshToken.builder()
+                .user(user)
+                .refreshToken(refreshToken)
+                .expiration(expiration)
+                .build();
+
+        // DB에 저장
+        refreshTokenRepository.save(token);
+    }
 }

@@ -19,6 +19,17 @@ public class JWTUtil {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
+    // id 확인
+    public Long getId(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("id", Number.class)
+                .longValue();
+    }
+
     // username 확인
     public String getUsername(String token) {
         return Jwts.parser()
@@ -72,10 +83,11 @@ public class JWTUtil {
 
 
     // 토큰 생성 메서드
-    public String creatJwt(String category, String username, String role,Long expiredMs) {
+    public String creatJwt(String category, Long userId, String username, String role,Long expiredMs) {
 
         return Jwts.builder()
                 .claim("category", category)
+                .claim("id", userId)
                 .claim("username", username)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))

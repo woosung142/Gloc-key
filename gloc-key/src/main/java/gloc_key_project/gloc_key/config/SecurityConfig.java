@@ -1,8 +1,10 @@
 package gloc_key_project.gloc_key.config;
 
+import gloc_key_project.gloc_key.entity.RefreshToken;
 import gloc_key_project.gloc_key.jwt.JWTFilter;
 import gloc_key_project.gloc_key.jwt.JWTUtil;
 import gloc_key_project.gloc_key.jwt.LoginFilter;
+import gloc_key_project.gloc_key.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
@@ -29,6 +31,7 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
@@ -85,7 +88,7 @@ public class SecurityConfig {
                 //JWTFilter 등록
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
                 //로그인 필터 등록 (UsernamePasswordAuthenticationFilter 대체)
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenRepository), UsernamePasswordAuthenticationFilter.class)
 
                 //세션 설정 STATELESS방식 사용
                 .sessionManagement((session) -> session
