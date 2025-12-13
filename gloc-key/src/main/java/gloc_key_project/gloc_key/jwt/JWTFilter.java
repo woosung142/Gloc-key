@@ -50,7 +50,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 사용자 정보 추출
         String username = jwtUtil.getUsername(accessToken);
-        String role = jwtUtil.getUsername(accessToken);
+        String role = jwtUtil.getRole(accessToken);
 
 
         User user = User.builder()

@@ -1,8 +1,6 @@
 package gloc_key_project.gloc_key.jwt;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.io.Decoders;
-import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -42,33 +40,42 @@ public class JWTUtil {
     }
 
     //cartegory(access, refresh) 확인
-    public String getCartegory(String token) {
+    public String getCategory(String token) {
         return Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .get("cartegory", String.class);
+                .get("category", String.class);
 
     }
 
+
+    public void validateToken(String token) {
+        Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token);
+    }
+
     // 토큰 만료 확인
-    public Boolean isExpired(String token) {
-        return Jwts.parser()
+    public boolean isExpired(String token) {
+        Date exp = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
                 .parseSignedClaims(token)
                 .getPayload()
-                .getExpiration()
-                .before(new Date());
+                .getExpiration();
+
+        return exp.before(new Date());
     }
 
 
     // 토큰 생성 메서드
-    public String creatJwt(String cartegory, String username, String role,Long expiredMs) {
+    public String creatJwt(String category, String username, String role,Long expiredMs) {
 
         return Jwts.builder()
-                .claim("cartegory", cartegory)
+                .claim("category", category)
                 .claim("username", username)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))
