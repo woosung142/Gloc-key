@@ -12,6 +12,7 @@ import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -46,6 +47,7 @@ public class AuthService {
 
     }
 
+    // 토큰 재발급 로직
     public Reissue_response reissueProcess(String refreshToken) {
 
         // 1. refreshToken 유무 검증
@@ -98,6 +100,17 @@ public class AuthService {
         refreshTokenRepository.save(token);
 
         return new Reissue_response(newAccessToken, newRefreshToken);
+    }
+
+    @Transactional
+    public void logoutProcess(String refreshToken) {
+
+            // 1. DB에서 토큰을 직접 조회
+            RefreshToken tokenEntity = refreshTokenRepository.findByRefreshToken(refreshToken)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid or already logged out token"));
+
+            // 2. 조회된 엔티티를 삭제
+            refreshTokenRepository.delete(tokenEntity);
     }
 
 }

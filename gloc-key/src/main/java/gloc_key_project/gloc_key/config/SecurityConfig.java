@@ -46,6 +46,8 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenRepository);
+        loginFilter.setFilterProcessesUrl("/api/login");
         http
                 //cors 설정
                 .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
@@ -79,7 +81,7 @@ public class SecurityConfig {
 
                 //접근 제어 및 혀용
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/auth/signup","/auth/reissue").permitAll()
+                        .requestMatchers("/api/login", "/", "/api/signup","/api/reissue", "/api/logout").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -88,7 +90,8 @@ public class SecurityConfig {
                 //JWTFilter 등록
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
                 //로그인 필터 등록 (UsernamePasswordAuthenticationFilter 대체)
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenRepository), UsernamePasswordAuthenticationFilter.class)
+                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
 
                 //세션 설정 STATELESS방식 사용
                 .sessionManagement((session) -> session

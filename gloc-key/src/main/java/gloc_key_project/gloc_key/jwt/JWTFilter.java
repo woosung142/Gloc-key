@@ -28,7 +28,7 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // 토큰 null 검증
         if(accessToken == null) {
-            System.out.println("token null");
+            System.out.println("token null12");
             filterChain.doFilter(request,response);
             return;
         }

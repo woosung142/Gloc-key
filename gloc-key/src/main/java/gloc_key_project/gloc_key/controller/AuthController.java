@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/auth/signup")
+    @PostMapping("/api/signup")
     public ResponseEntity<?> signupProcess(Signup_request signupRequest) {
 
         authService.SignupProcess(signupRequest);
@@ -26,7 +27,7 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/auth/reissue")
+    @PostMapping("/api/reissue")
     public ResponseEntity<?> reissueProcess(HttpServletRequest request, HttpServletResponse response) {
 
         String refreshToken = null;
@@ -44,6 +45,27 @@ public class AuthController {
 
         return new ResponseEntity<>(HttpStatus.OK);
 
+    }
+
+    @DeleteMapping("/api/logout")
+    public ResponseEntity<?> logoutProcess(HttpServletRequest request, HttpServletResponse response) {
+        String refreshToken = null;
+        for (Cookie cookie : request.getCookies()) {
+            if ("refresh".equals(cookie.getName())) {
+                refreshToken = cookie.getValue();
+            }
+        }
+
+        authService.logoutProcess(refreshToken);
+
+        // **추가:** Refresh Token 쿠키를 만료시켜 클라이언트에서 삭제하도록 명령
+        Cookie expiredCookie = new Cookie("refresh", null);
+        expiredCookie.setMaxAge(0); // 만료 시간을 0으로 설정
+        expiredCookie.setPath("/");
+        expiredCookie.setHttpOnly(true);
+        response.addCookie(expiredCookie);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/test")
