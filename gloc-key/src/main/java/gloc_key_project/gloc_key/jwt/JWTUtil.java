@@ -41,6 +41,17 @@ public class JWTUtil {
                 .get("role",String.class);
     }
 
+    //cartegory(access, refresh) 확인
+    public String getCartegory(String token) {
+        return Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .get("cartegory", String.class);
+
+    }
+
     // 토큰 만료 확인
     public Boolean isExpired(String token) {
         return Jwts.parser()
@@ -54,9 +65,10 @@ public class JWTUtil {
 
 
     // 토큰 생성 메서드
-    public String creatJwt(String username, String role, Long expiredMs) {
+    public String creatJwt(String cartegory, String username, String role,Long expiredMs) {
 
         return Jwts.builder()
+                .claim("cartegory", cartegory)
                 .claim("username", username)
                 .claim("role", role)
                 .issuedAt(new Date(System.currentTimeMillis()))

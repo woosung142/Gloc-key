@@ -2,9 +2,11 @@ package gloc_key_project.gloc_key.jwt;
 
 import gloc_key_project.gloc_key.dto.CustomUserDetails;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -44,18 +46,27 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             Authentication authResult
     ) {
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
+        // 사용자 username 추출
         String username = customUserDetails.getUsername();
 
         Collection<? extends GrantedAuthority> authorities = authResult.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
-
+        // 사용자 role 추출
         String role = auth.getAuthority();
 
-        // 15분
-        String token = jwtUtil.creatJwt(username, role, 15 * 60 * 1000L);
+        // accessToken 15분
+        String accessToken = jwtUtil.creatJwt("access", username, role, 15 * 60 * 1000L);
 
-        response.addHeader("Authorization", "Bearer " + token);
+        // refreshToken 2주
+        String refreshToken = jwtUtil.creatJwt("access", username, role, 14 * 24 * 60 * 60 * 1000L);
+
+        // accessToken 헤더에 추가
+        response.setHeader("access", accessToken);
+        // refreshToken 쿠키에 추가
+        response.addCookie(createCookie("refresh", refreshToken));
+
+        response.setStatus(HttpStatus.OK.value());
     }
 
     // 로그인 실패 시
@@ -69,4 +80,19 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(401);
         System.out.println("Login Failed");
     }
+
+    private Cookie createCookie(String key, String value) {
+        Cookie cookie = new Cookie(key, value);
+        // 2주 설정
+        cookie.setMaxAge(14 * 24 * 60 * 60);
+        // 쿠키가 유요한 경로
+        cookie.setPath("/");
+        // HTTPS 연결에서만 쿠키 전송
+//        cookie.setSecure(true);
+        
+        // XSS 공격 방지
+        cookie.setHttpOnly(true);
+        return cookie;
+    }
+
 }
