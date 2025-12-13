@@ -14,22 +14,6 @@ server:
     - --insecure  # HTTPS 비활성화 1번
   ingress:
     enabled: false
-#    ingressClassName: traefik
-#    hostname: "argocd.weapi.shop"
-#    tls: false
-
-#    extraPaths:
-#      - path: /
-#        pathType: Prefix
-#        backend:
-#          service:
-#            name: argocd-server
-#            port:
-#              number: 80
-#  service:
-#    annotations:
-#      annotations:
-#        traefik.ingress.kubernetes.io/service.serversscheme: http # HTTPS 비활성화 2번
   resources:
     requests:
       cpu: 3m
