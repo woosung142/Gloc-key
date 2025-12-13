@@ -9,6 +9,6 @@ output "db_name" {
 }
 
 output "rds_sg" {
-  value = aws_security_group.rds_sg.id
+  value       = aws_security_group.rds_sg.id
   description = "security 모듈에서 생성한 RDS 보안그룹"
 }

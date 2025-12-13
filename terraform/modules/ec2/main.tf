@@ -18,7 +18,10 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "k3s_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3a.large" # 2 vCPU, 8GB RAM
-  key_name = var.key_name
+  key_name      = var.key_name
+  lifecycle {
+    ignore_changes = [ami, user_data]
+  }
 
   # 서브넷 선택: 리스트 중 첫 번째(a존)에 시도
   subnet_id = var.subnet_ids[0]
@@ -33,7 +36,7 @@ resource "aws_instance" "k3s_server" {
     content {
       market_type = "spot"
       spot_options {
-        max_price = "0.04" # $0.04 넘어가면 구매 안 함
+        max_price                      = "0.04" # $0.04 넘어가면 구매 안 함
         instance_interruption_behavior = "terminate"
       }
     }
@@ -50,7 +53,7 @@ resource "aws_instance" "k3s_server" {
     }
   }
 
-user_data = <<-EOF
+  user_data = <<-EOF
     #!/bin/bash
     exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     
@@ -103,7 +106,65 @@ user_data = <<-EOF
     echo 'export KUBECONFIG=/home/ubuntu/.kube/config' >> /home/ubuntu/.bashrc
     chown ubuntu:ubuntu /home/ubuntu/.bashrc
 
-    echo "[Done] 모든 설치가 완료"
+    echo "[Done] 설치 완료!"
+
+    echo "[DDNS] DNS 업데이트 시작..."
+
+    # 내 사설 IP 가져오기 (IMDSv2 토큰 사용)
+    TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+    MY_PRIVATE_IP=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/local-ipv4)
+
+    DOMAIN_NAME="glok.store"
+
+    HOSTED_ZONE_ID=$(aws route53 list-hosted-zones-by-name --dns-name "$DOMAIN_NAME." --query "HostedZones[0].Id" --output text)
+
+    echo "[DDNS] 감지된 IP: $MY_PRIVATE_IP, Zone ID: $HOSTED_ZONE_ID"
+
+    if [ -z "$HOSTED_ZONE_ID" ]; then
+        echo "[DDNS] Error: Hosted Zone ID를 찾을 수 없습니다."
+    else
+        # 업데이트할 JSON 파일 생성 (관리자용 도메인 3개 업데이트)
+        cat > /tmp/route53-update.json <<JSON
+{
+  "Comment": "Auto update from EC2 User Data",
+  "Changes": [
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "ar.$DOMAIN_NAME",
+        "Type": "A",
+        "TTL": 60,
+        "ResourceRecords": [{"Value": "$MY_PRIVATE_IP"}]
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "mo.$DOMAIN_NAME",
+        "Type": "A",
+        "TTL": 60,
+        "ResourceRecords": [{"Value": "$MY_PRIVATE_IP"}]
+      }
+    },
+    {
+      "Action": "UPSERT",
+      "ResourceRecordSet": {
+        "Name": "tr.$DOMAIN_NAME",
+        "Type": "A",
+        "TTL": 60,
+        "ResourceRecords": [{"Value": "$MY_PRIVATE_IP"}]
+      }
+    }
+  ]
+}
+JSON
+
+        # Route53 업데이트 요청 전송
+        aws route53 change-resource-record-sets --hosted-zone-id "$HOSTED_ZONE_ID" --change-batch file:///tmp/route53-update.json
+        echo "[DDNS] Route53 업데이트 요청 완료"
+    fi
+
+    echo "[Done] 모든 작업 완료"
   EOF
 
   tags = {
