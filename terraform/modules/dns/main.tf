@@ -1,5 +1,5 @@
 resource "aws_route53_zone" "main" {
-    name        = var.domain_name
+  name = var.domain_name
 }
 
 # [public] 일반 사용자용
