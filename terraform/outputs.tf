@@ -8,7 +8,7 @@ output "github_actions_secret_key" {
 }
 # 최종 결과 출력
 output "final_connect_ip" {
-  value = aws_eip.k3s_ip.public_ip
+  value       = aws_eip.k3s_ip.public_ip
   description = "접속할 고정 IP (Tailscale이 안 될 경우 이 IP 사용)"
 }
 output "ecr_urls" {

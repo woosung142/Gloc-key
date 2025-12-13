@@ -1,20 +1,20 @@
 resource "aws_ecr_repository" "repo" { # ECR 리포지토리 생성
-    name = var.repo_name
-    image_tag_mutability = "MUTABLE"
+  name                 = var.repo_name
+  image_tag_mutability = "MUTABLE"
 
-    image_scanning_configuration {
-        scan_on_push = true
-    }
+  image_scanning_configuration {
+    scan_on_push = true
+  }
 
-    tags = {
-        Name = "${var.project_name}-ecr-repo"
-    }
+  tags = {
+    Name = "${var.project_name}-ecr-repo"
+  }
 }
 
 resource "aws_ecr_lifecycle_policy" "policy" { # ECR 라이프사이클 정책 설정
   repository = aws_ecr_repository.repo.name
 
-policy = <<EOF
+  policy = <<EOF
 {
     "rules": [
         {
