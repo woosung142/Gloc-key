@@ -3,6 +3,7 @@ package gloc_key_project.gloc_key.controller;
 import gloc_key_project.gloc_key.dto.Signup_request;
 import gloc_key_project.gloc_key.service.AuthService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,11 @@ public class AuthController {
         authService.SignupProcess(signupRequest);
 
         return "ok";
+    }
+
+    @GetMapping("/test")
+    public String test() {
+        return "success!";
     }
 }
 

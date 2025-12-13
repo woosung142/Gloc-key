@@ -1,5 +1,6 @@
 package gloc_key_project.gloc_key.config;
 
+import gloc_key_project.gloc_key.jwt.JWTFilter;
 import gloc_key_project.gloc_key.jwt.JWTUtil;
 import gloc_key_project.gloc_key.jwt.LoginFilter;
 import lombok.RequiredArgsConstructor;
@@ -53,6 +54,9 @@ public class SecurityConfig {
                         .anyRequest().authenticated()
                 )
 
+
+                //JWTFilter 등록
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
                 //로그인 필터 등록 (UsernamePasswordAuthenticationFilter 대체)
                 .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class)
 
