@@ -99,3 +99,12 @@ module "ecr" {
   project_name = "gloc-key"
   repo_name    = each.key
 }
+
+# Route53 도메인 및 레코드 설정
+module "dns" {
+  source = "./modules/dns"
+
+  domain_name = "glok.store"
+  private_ip  = module.ec2.private_ip
+  public_ip   = aws_eip.k3s_ip.public_ip
+}
