@@ -13,4 +13,5 @@ spec:
       services:
         - name: argocd-server
           port: 80
-  tls: {}
+  tls:
+    secretName: wildcard-cert
