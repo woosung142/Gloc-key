@@ -105,7 +105,7 @@ resource "aws_iam_role_policy" "eip_stealing_policy" { # EC2 인스턴스가 Ela
   })
 }
 
-resource "aws_iam_instance_profile" "main" { # IAM 인스턴스 프로파일 생성
+resource "aws_iam_instance_profile" "main" { # 프로파일 -> role -> policy
   name = "${var.project_name}-profile"
   role = aws_iam_role.ec2_role.name
 }
