@@ -105,12 +105,12 @@ resource "aws_iam_role_policy" "eip_stealing_policy" { # EC2 인스턴스가 Ela
   })
 }
 
-resource "aws_iam_instance_profile" "main" { # IAM 인스턴스 프로파일 생성
+resource "aws_iam_instance_profile" "main" { # 프로파일 -> role -> policy
   name = "${var.project_name}-profile"
   role = aws_iam_role.ec2_role.name
 }
 
-resource "aws_iam_user" "cicd_bot" {
+resource "aws_iam_user" "cicd_bot" {  # GitHub Actions용 IAM 사용자 생성 - 수정 필요
   name = "${var.project_name}-cicd-bot"
 
   tags = {
@@ -146,4 +146,9 @@ resource "aws_iam_role_policy" "route53_update_policy" {
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "pull_ecr_policy" { # EC2 인스턴스에 ECR 읽기 권한 부여
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }

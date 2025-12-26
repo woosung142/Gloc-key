@@ -16,10 +16,9 @@ server:
     enabled: false
   resources:
     requests:
-      cpu: 3m
+      cpu: 50m
       memory: 40Mi
     limits:
-      cpu: 9m
       memory: 80Mi
 
 repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
