@@ -152,3 +152,24 @@ resource "aws_iam_role_policy_attachment" "pull_ecr_policy" { # EC2 인스턴스
   role       = aws_iam_role.ec2_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
+
+resource "aws_iam_role_policy" "k3s_ssm_policy" {
+  name = "k3s_ssm_policy"
+  role = aws_iam_role.ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "AllowSSMParameterAccess"
+        Effect   = "Allow"
+        Action   = [
+          "ssm:PutParameter",    # 토큰 저장 (Master용)
+          "ssm:GetParameter",    # 토큰 조회 (Master 확인용/Worker용)
+          "ssm:DeleteParameter"  # 필요시 삭제
+        ]
+        Resource = "arn:aws:ssm:ap-northeast-2:*:parameter/${var.project_name}/k3s/*"
+      }
+    ]
+  })
+}
