@@ -173,3 +173,22 @@ resource "aws_iam_role_policy" "k3s_ssm_policy" {
     ]
   })
 }
+# SageMaker가 사용할 IAM 역할
+resource "aws_iam_role" "sagemaker_role" {
+  name = "${var.project_name}-sagemaker-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = { Service = "sagemaker.amazonaws.com" }
+    }]
+  })
+}
+
+# SageMaker 역할에 ECR 읽기 권한을 연결
+resource "aws_iam_role_policy_attachment" "sagemaker_ecr_readonly" {
+  role       = aws_iam_role.sagemaker_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
