@@ -17,3 +17,8 @@ output "cicd_secret_key" {
   sensitive   = true
 }
 
+# worker 인스턴스용 프로파일 출력 추가
+output "worker_profile_name" {
+  value = aws_iam_instance_profile.worker_profile.name
+}
+
