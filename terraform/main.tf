@@ -98,6 +98,22 @@ module "ecr" {
   repo_name    = each.key
 }
 
+# SageMaker 모듈 호출
+module "sagemaker" {
+  source = "./modules/sagemaker"
+
+  project_name = "gloc-key"
+  # 생성된 ECR 모듈의 결과값에서 ai-sd15의 URL을 가져옴
+  image_uri    = "${module.ecr["ai-sd15"].repository_url}:test-ai-image"
+
+  # SageMaker 역할 ARN 주소 가져오기
+  execution_role_arn = module.security.sagemaker_role_arn
+  
+  # 서버리스 설정값들을 변수로 넘겨줌
+  memory_size  = 1024
+  max_concurrency = 1
+}
+
 # Route53 도메인 및 레코드 설정
 module "dns" {
   source = "./modules/dns"
