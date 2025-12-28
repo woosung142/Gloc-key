@@ -27,8 +27,8 @@ resource "aws_eip" "k3s_ip" {
 }
 
 # EC2 모듈 호출
-module "ec2" {
-  source = "./modules/ec2"
+module "master" {
+  source = "./modules/master"
 
   project_name = "gloc-key"
 
@@ -45,8 +45,6 @@ module "ec2" {
   # Tailscale 키 전달
   tailscale_auth_key = var.tailscale_key
 
-  # 스팟 사용 여부 (변수 사용 or 직접 true/false 지정)
-  use_spot = true
   key_name = aws_key_pair.kp.key_name
 }
 
@@ -105,6 +103,6 @@ module "dns" {
   source = "./modules/dns"
 
   domain_name = "glok.store"
-  private_ip  = module.ec2.private_ip
+  private_ip  = module.master.private_ip
   public_ip   = aws_eip.k3s_ip.public_ip
 }
