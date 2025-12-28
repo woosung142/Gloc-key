@@ -20,6 +20,7 @@ resource "aws_launch_template" "worker_lt" {
     image_id      = data.aws_ami.ubuntu.id
     instance_type = "t3a.medium" # 2 vCPU, 4GB RAM
 
+<<<<<<< HEAD
     block_device_mappings {
         device_name = "/dev/sda1"
 
@@ -39,6 +40,8 @@ resource "aws_launch_template" "worker_lt" {
         }
     }
 
+=======
+>>>>>>> bdc93d5 (feat: worker node 추가 및 인프라 수정)
     instance_market_options {
         market_type = "spot"
         spot_options {
