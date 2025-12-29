@@ -10,7 +10,7 @@ spec:
   
   sources:
     - repoURL: https://github.com/woosung142/Gloc-key.git
-      targetRevision: feature/k3s #배포 전 수정
+      targetRevision: infra/refac #배포 전 수정
       path: k3s/setup/argocd
 
   destination:

@@ -37,12 +37,12 @@ resource "aws_launch_template" "worker_lt" {
     security_groups             = [var.sg_id]
     }
 
-    user_data = templatefile("${path.module}/worker_user_data.sh", {
+    user_data = base64encode(templatefile("${path.module}/user_data.sh", {
         tailscale_auth_key = var.tailscale_auth_key
-        master_ip          = var.master_ip
+        master_ip          = var.master_private_ip
         project_name       = var.project_name
         ssm_token_path     = "/${var.project_name}/k3s/node-token"
-    })
+    }))
 
     tag_specifications {
         resource_type = "instance"

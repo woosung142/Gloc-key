@@ -26,7 +26,7 @@ resource "aws_eip" "k3s_ip" {
   }
 }
 
-# EC2 모듈 호출
+# master 모듈 호출
 module "master" {
   source = "./modules/master"
 
@@ -46,6 +46,25 @@ module "master" {
   tailscale_auth_key = var.tailscale_key
 
   key_name = aws_key_pair.kp.key_name
+}
+
+# worker 모듈 호출
+module "worker" {
+  source = "./modules/worker"
+
+  project_name = "gloc-key"
+
+  # VPC 정보 전달
+  subnet_ids = module.vpc.public_subnet_ids
+
+  # 보안 그룹 및 권한 전달
+  sg_id            = module.security.sg_id
+  iam_profile_name = module.security.worker_profile_name
+  master_private_ip = module.master.private_ip
+
+  # Tailscale 키 전달
+  tailscale_auth_key = var.tailscale_key
+  ssm_token_path   = "/gloc-key/k3s/node-token"
 }
 
 # 3. ★ 신규 RDS 모듈 추가
@@ -96,6 +115,22 @@ module "ecr" {
   for_each     = toset(local.ecr_repos)
   project_name = "gloc-key"
   repo_name    = each.key
+}
+
+# SageMaker 모듈 호출
+module "sagemaker" {
+  source = "./modules/sagemaker"
+
+  project_name = "gloc-key"
+  # 생성된 ECR 모듈의 결과값에서 ai-sd15의 URL을 가져옴
+  image_uri    = "${module.ecr["ai-sd15"].repository_url}:test-ai-image"
+
+  # SageMaker 역할 ARN 주소 가져오기
+  execution_role_arn = module.security.sagemaker_role_arn
+  
+  # 서버리스 설정값들을 변수로 넘겨줌
+  memory_size  = 1024
+  max_concurrency = 1
 }
 
 # Route53 도메인 및 레코드 설정

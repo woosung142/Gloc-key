@@ -1,3 +1,7 @@
+global:
+  nodeSelector:
+    role: worker
+    
 controller:
   replicas: 1
   resources:
