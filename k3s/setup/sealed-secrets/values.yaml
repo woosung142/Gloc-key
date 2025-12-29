@@ -1,5 +1,8 @@
 fullnameOverride: "sealed-secrets-controller"
 
+nodeSelector:
+  role: worker
+
 resources:
   requests:
     cpu: 50m
