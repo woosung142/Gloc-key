@@ -26,7 +26,7 @@ resource "aws_eip" "k3s_ip" {
   }
 }
 
-# EC2 모듈 호출
+# master 모듈 호출
 module "master" {
   source = "./modules/master"
 
