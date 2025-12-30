@@ -7,3 +7,4 @@ resources:
 # networking
   - networking/argocd-route.yaml
   - networking/tls-store.yaml
+  - networking/traefik-dashboard.yaml
