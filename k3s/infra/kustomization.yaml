@@ -6,3 +6,4 @@ resources:
   - certs/certificate.yaml
 # networking
   - networking/argocd-route.yaml
+  - networking/tls-store.yaml
