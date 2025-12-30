@@ -8,7 +8,7 @@ spec:
   source:
     repoURL: https://github.com/woosung142/Gloc-key.git
     targetRevision: infra/refac
-    path: setup/cert-manager
+    path: k3s/setup/cert-manager
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
