@@ -12,4 +12,4 @@ spec:
     - dns01:
         route53:
           region: ap-northeast-2
-          hostedZoneID: Z02165381PHHT82XBL8ER # ★ 본인 HostedZone ID 확인
+          hostedZoneID: Z02165381PHHT82XBL8ER
