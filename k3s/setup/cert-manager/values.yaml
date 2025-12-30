@@ -1,0 +1,12 @@
+installCRDs: true  # CRD 자동설치 활성화
+
+global:
+  leaderElection:
+    namespace: cert-manager
+  nodeSelector:
+    role: worker
+
+prometheus:
+  enabled: true
+  servicemonitor:
+    enabled: true
