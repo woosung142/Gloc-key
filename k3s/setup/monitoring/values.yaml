@@ -1,4 +1,10 @@
 prometheusOperator: #(1.48m / 32.3) cpu/memory
+  admissionWebhooks:
+    enabled: false
+    patch:
+      enabled: false
+  tls:
+    enabled: false
   nodeSelector:
     role: worker
   resources:
