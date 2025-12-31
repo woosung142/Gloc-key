@@ -18,10 +18,10 @@ data "aws_ami" "ubuntu" {
 resource "aws_instance" "k3s_server" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t3a.small" # 2 vCPU, 2GB RAM
-  key_name = var.key_name
+  key_name      = var.key_name
   lifecycle {
     ignore_changes = [ami, user_data] # user_data 수정
-    }
+  }
 
   # 서브넷 선택: 리스트 중 첫 번째(a존)에 시도
   subnet_id = var.subnet_ids[0]
@@ -52,8 +52,8 @@ resource "aws_instance" "k3s_server" {
     ssm_token_path     = "/${var.project_name}/k3s/node-token"
 
     #argocd 배포 파일 경로 및 루트 파일
-    argocd_values = file("${path.root}/../k3s/setup/argocd/values.yaml")
-    argocd_kustomize = file("${path.root}/../k3s/setup/argocd/kustomization.yaml")
+    argocd_values     = file("${path.root}/../k3s/setup/argocd/values.yaml")
+    argocd_kustomize  = file("${path.root}/../k3s/setup/argocd/kustomization.yaml")
     root_app_manifest = file("${path.root}/../k3s/bootstrap/root.yaml")
   })
 }
