@@ -24,7 +24,7 @@ output "worker_profile_name" {
 
 output "sagemaker_role_arn" {
   description = "SageMaker ARN 주소 정보"
-  value = aws_iam_role.sagemaker_role.arn
+  value       = aws_iam_role.sagemaker_role.arn
 }
 # worker 인스턴스용 프로파일 출력 추가
 output "worker_profile_name" {

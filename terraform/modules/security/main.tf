@@ -111,7 +111,7 @@ resource "aws_iam_instance_profile" "main" { # 프로파일 -> role -> policy
   role = aws_iam_role.ec2_role.name
 }
 
-resource "aws_iam_user" "cicd_bot" {  # GitHub Actions용 IAM 사용자 생성 - 수정 필요
+resource "aws_iam_user" "cicd_bot" { # GitHub Actions용 IAM 사용자 생성 - 수정 필요
   name = "${var.project_name}-cicd-bot"
 
   tags = {
@@ -163,12 +163,12 @@ resource "aws_iam_role_policy" "k3s_ssm_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid      = "AllowSSMParameterAccess"
-        Effect   = "Allow"
-        Action   = [
-          "ssm:PutParameter",    # 토큰 저장 (Master용)
-          "ssm:GetParameter",    # 토큰 조회 (Master 확인용/Worker용)
-          "ssm:DeleteParameter"  # 필요시 삭제
+        Sid    = "AllowSSMParameterAccess"
+        Effect = "Allow"
+        Action = [
+          "ssm:PutParameter",   # 토큰 저장 (Master용)
+          "ssm:GetParameter",   # 토큰 조회 (Master 확인용/Worker용)
+          "ssm:DeleteParameter" # 필요시 삭제
         ]
         Resource = "arn:aws:ssm:ap-northeast-2:*:parameter/${var.project_name}/k3s/*"
       }
@@ -182,8 +182,8 @@ resource "aws_iam_role" "sagemaker_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
       Principal = { Service = "sagemaker.amazonaws.com" }
     }]
   })
@@ -221,11 +221,11 @@ resource "aws_iam_role_policy" "worker_ssm_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid      = "AllowSSMParameterAccess"
-        Effect   = "Allow"
-        Action   = [
-          "ssm:GetParameters",    
-          "ssm:GetParameter",    # 토큰 조회 (Master 확인용/Worker용)
+        Sid    = "AllowSSMParameterAccess"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameters",
+          "ssm:GetParameter", # 토큰 조회 (Master 확인용/Worker용)
         ]
         Resource = "arn:aws:ssm:ap-northeast-2:*:parameter/${var.project_name}/k3s/*"
       }
