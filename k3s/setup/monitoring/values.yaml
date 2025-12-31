@@ -68,7 +68,24 @@ grafana:
     role: worker
   defaultDashboardsTimezone: KST
   adminPassword: "qwer1234!" # Grafana 관리자 비밀번호 설정
-
+  sidecar:
+    datasources:
+      enabled: true
+      defaultDatasourceEnabled: false
+  additionalDataSources:
+    - name: Prometheus
+      type: prometheus
+      uid: prometheus
+      access: proxy
+      url: http://kube-prometheus-stack-prometheus.monitoring:9090
+      isDefault: true
+    - name: Alertmanager
+      type: alertmanager
+      uid: alertmanager
+      access: proxy
+      url: http://kube-prometheus-stack-alertmanager.monitoring:9093
+      jsonData:
+        implementation: prometheus
   resources: # (3.30m / 141) cpu/memory -> 메모리 변경 폭이 큼
     requests:
       cpu: 10m  #수정
