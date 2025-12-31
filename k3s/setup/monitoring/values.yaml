@@ -45,7 +45,7 @@ prometheus:
       role: worker
     scrapeInterval: "1m" # 스크랩 간격을 1분
     retention: "30d" # 데이터 보존 기간을 10일
-    retentionSize: "13Gi"
+    retentionSize: "13GiB"
     resources: #(18.2m / 414) cpu/memory
       requests:
         cpu: 60m
