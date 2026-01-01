@@ -1,24 +1,20 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: monitoring
+  name: cert-manager
   namespace: argocd
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
   source:
     repoURL: https://github.com/woosung142/Gloc-key.git
     targetRevision: infra/refac
-    path: k3s/setup/monitoring
+    path: k3s/setup/cert-manager
   destination:
     server: https://kubernetes.default.svc
-    namespace: monitoring
-
+    namespace: cert-manager
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
