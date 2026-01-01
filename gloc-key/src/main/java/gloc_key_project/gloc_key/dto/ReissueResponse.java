@@ -1,11 +1,11 @@
 package gloc_key_project.gloc_key.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
 @AllArgsConstructor
-public class Reissue_response {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class ReissueResponse {
     private String newAccessToken;
     private String newRefreshToken;
 }
