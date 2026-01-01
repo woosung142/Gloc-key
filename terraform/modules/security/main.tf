@@ -105,12 +105,12 @@ resource "aws_iam_role_policy" "eip_stealing_policy" { # EC2 인스턴스가 Ela
   })
 }
 
-resource "aws_iam_instance_profile" "main" { # IAM 인스턴스 프로파일 생성
+resource "aws_iam_instance_profile" "main" { # 프로파일 -> role -> policy
   name = "${var.project_name}-profile"
   role = aws_iam_role.ec2_role.name
 }
 
-resource "aws_iam_user" "cicd_bot" {
+resource "aws_iam_user" "cicd_bot" {  # GitHub Actions용 IAM 사용자 생성 - 수정 필요
   name = "${var.project_name}-cicd-bot"
 
   tags = {
@@ -146,4 +146,49 @@ resource "aws_iam_role_policy" "route53_update_policy" {
       }
     ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "pull_ecr_policy" { # EC2 인스턴스에 ECR 읽기 권한 부여
+  role       = aws_iam_role.ec2_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_role_policy" "k3s_ssm_policy" {
+  name = "k3s_ssm_policy"
+  role = aws_iam_role.ec2_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid      = "AllowSSMParameterAccess"
+        Effect   = "Allow"
+        Action   = [
+          "ssm:PutParameter",    # 토큰 저장 (Master용)
+          "ssm:GetParameter",    # 토큰 조회 (Master 확인용/Worker용)
+          "ssm:DeleteParameter"  # 필요시 삭제
+        ]
+        Resource = "arn:aws:ssm:ap-northeast-2:*:parameter/${var.project_name}/k3s/*"
+      }
+    ]
+  })
+}
+# SageMaker가 사용할 IAM 역할
+resource "aws_iam_role" "sagemaker_role" {
+  name = "${var.project_name}-sagemaker-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = { Service = "sagemaker.amazonaws.com" }
+    }]
+  })
+}
+
+# SageMaker 역할에 ECR 읽기 권한을 연결
+resource "aws_iam_role_policy_attachment" "sagemaker_ecr_readonly" {
+  role       = aws_iam_role.sagemaker_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }

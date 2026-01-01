@@ -17,3 +17,7 @@ output "cicd_secret_key" {
   sensitive   = true
 }
 
+output "sagemaker_role_arn" {
+  description = "SageMaker ARN 주소 정보"
+  value = aws_iam_role.sagemaker_role.arn
+}

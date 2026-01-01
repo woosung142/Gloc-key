@@ -27,8 +27,8 @@ resource "aws_eip" "k3s_ip" {
 }
 
 # EC2 모듈 호출
-module "ec2" {
-  source = "./modules/ec2"
+module "master" {
+  source = "./modules/master"
 
   project_name = "gloc-key"
 
@@ -45,8 +45,6 @@ module "ec2" {
   # Tailscale 키 전달
   tailscale_auth_key = var.tailscale_key
 
-  # 스팟 사용 여부 (변수 사용 or 직접 true/false 지정)
-  use_spot = true
   key_name = aws_key_pair.kp.key_name
 }
 
@@ -100,11 +98,27 @@ module "ecr" {
   repo_name    = each.key
 }
 
+# SageMaker 모듈 호출
+module "sagemaker" {
+  source = "./modules/sagemaker"
+
+  project_name = "gloc-key"
+  # 생성된 ECR 모듈의 결과값에서 ai-sd15의 URL을 가져옴
+  image_uri    = "${module.ecr["ai-sd15"].repository_url}:test-ai-image"
+
+  # SageMaker 역할 ARN 주소 가져오기
+  execution_role_arn = module.security.sagemaker_role_arn
+  
+  # 서버리스 설정값들을 변수로 넘겨줌
+  memory_size  = 1024
+  max_concurrency = 1
+}
+
 # Route53 도메인 및 레코드 설정
 module "dns" {
   source = "./modules/dns"
 
   domain_name = "glok.store"
-  private_ip  = module.ec2.private_ip
+  private_ip  = module.master.private_ip
   public_ip   = aws_eip.k3s_ip.public_ip
 }

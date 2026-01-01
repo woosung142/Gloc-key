@@ -8,7 +8,7 @@ spec:
   
   source:
     repoURL: https://github.com/woosung142/Gloc-key.git
-    targetRevision: main
+    targetRevision: feature/k3s
     path: k3s/Application
   
   destination:

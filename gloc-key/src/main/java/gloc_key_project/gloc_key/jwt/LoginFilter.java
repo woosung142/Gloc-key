@@ -1,14 +1,15 @@
 package gloc_key_project.gloc_key.jwt;
 
 import gloc_key_project.gloc_key.dto.CustomUserDetails;
-import gloc_key_project.gloc_key.entity.RefreshToken;
+//import gloc_key_project.gloc_key.entity.RefreshToken;
 import gloc_key_project.gloc_key.entity.User;
-import gloc_key_project.gloc_key.repository.RefreshTokenRepository;
+//import gloc_key_project.gloc_key.repository.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +22,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -28,13 +30,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private final AuthenticationManager authenticationManager;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
+//    private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) {
         // 사용자 정보 추출
         String username = obtainUsername(request);
         String password = obtainPassword(request);
+
+        System.out.println("username = " + obtainUsername(request));
+        System.out.println("password = " + obtainPassword(request));
 
         // 사용자 정보 DTO
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
@@ -68,9 +74,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // refreshToken 2주
         String refreshToken = jwtUtil.creatJwt("refresh", userId, username, role, 14 * 24 * 60 * 60 * 1000L);
 
-        // refreshToken 저장
-        long refreshTokenExpiredMs = 14 * 24 * 60 * 60 * 1000L;
-        saveRefreshToken(user_id, refreshToken, refreshTokenExpiredMs);
+        // refreshToken 저장(Redis)
+        redisTemplate.opsForValue().set(
+                "RT:" + username,
+                refreshToken,
+                14,
+                TimeUnit.DAYS
+        );
+
 
         // accessToken 헤더에 추가
         response.setHeader("access", accessToken);
@@ -106,24 +117,4 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         return cookie;
     }
 
-
-    // refresh token DB 저장 메서드
-    private void saveRefreshToken(Long user_id, String refreshToken, Long expiredMs)  {
-
-        // User 엔티티를 프록시(참조)로 가져옴.
-        User user = User.builder().id(user_id).build();
-
-        // 만료시간
-        LocalDateTime expiration = LocalDateTime.now().plus(expiredMs, ChronoUnit.MILLIS);
-
-        // 객체 생성
-        RefreshToken token = RefreshToken.builder()
-                .user(user)
-                .refreshToken(refreshToken)
-                .expiration(expiration)
-                .build();
-
-        // DB에 저장
-        refreshTokenRepository.save(token);
-    }
 }
