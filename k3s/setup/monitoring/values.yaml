@@ -39,6 +39,11 @@ alertmanager: #(0.23m / 19.8) cpu/memory
     #    cpu: 3m
     #    memory: 40Mi
 
+prometheus-node-exporter:
+  tolerations:
+    - effect: NoSchedule
+      operator: Exists
+
 prometheus:
   prometheusSpec:
     nodeSelector:
