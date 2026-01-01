@@ -20,39 +20,6 @@ resource "aws_launch_template" "worker_lt" {
   image_id      = data.aws_ami.ubuntu.id
   instance_type = "t3a.medium" # 2 vCPU, 4GB RAM
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-    block_device_mappings {
-        device_name = "/dev/sda1"
-
-        ebs {
-        volume_size           = 30
-        volume_type           = "gp3"
-        iops                  = 3000
-        throughput            = 125
-        delete_on_termination = true
-        }
-    }
-    tag_specifications {
-        resource_type = "instance"
-
-        tags = {
-        Name = "${var.project_name}-worker"
-        }
-    }
-
-=======
->>>>>>> bdc93d5 (feat: worker node 추가 및 인프라 수정)
-    instance_market_options {
-        market_type = "spot"
-        spot_options {
-            max_price = "0.025" # 최대 가격 설정
-            spot_instance_type = "one-time"
-        }
-=======
-=======
->>>>>>> d40ecfad6e603c0b5c2a7d17c72055153a263eb1
   block_device_mappings {
     device_name = "/dev/sda1"
 
@@ -62,10 +29,6 @@ resource "aws_launch_template" "worker_lt" {
       iops                  = 3000
       throughput            = 125
       delete_on_termination = true
-<<<<<<< HEAD
->>>>>>> e6987e6 (feat: monitoring 도입)
-=======
->>>>>>> d40ecfad6e603c0b5c2a7d17c72055153a263eb1
     }
   }
   tag_specifications {
