@@ -22,6 +22,7 @@ resource "aws_launch_template" "worker_lt" {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
     block_device_mappings {
         device_name = "/dev/sda1"
 
@@ -50,6 +51,8 @@ resource "aws_launch_template" "worker_lt" {
             spot_instance_type = "one-time"
         }
 =======
+=======
+>>>>>>> d40ecfad6e603c0b5c2a7d17c72055153a263eb1
   block_device_mappings {
     device_name = "/dev/sda1"
 
@@ -59,7 +62,10 @@ resource "aws_launch_template" "worker_lt" {
       iops                  = 3000
       throughput            = 125
       delete_on_termination = true
+<<<<<<< HEAD
 >>>>>>> e6987e6 (feat: monitoring 도입)
+=======
+>>>>>>> d40ecfad6e603c0b5c2a7d17c72055153a263eb1
     }
   }
   tag_specifications {
