@@ -32,7 +32,7 @@ repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
       cpu: 50m #2m
       memory: 120Mi #40Mi
     limits:
-      cpu: 200m #6m
+      #cpu: 200m #6m
       memory: 360Mi #120Mi
 
 applicationSet:
