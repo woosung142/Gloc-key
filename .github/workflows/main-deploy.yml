@@ -77,16 +77,21 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Update Kustomize Manifest
-        if: github.ref_name == 'main' || github.ref_name == 'cicd'
+        if: github.ref_name == 'main' || github.ref_name == 'ccid'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           # 변수 설정
           NEW_TAG="${{ github.ref_name }}-${{ env.SHORT_SHA }}"
           FULL_IMAGE_NAME="${ECR_REGISTRY}/${{ matrix.service }}"
-          
-          # Kustomize 파일 경로
-          KUSTOMIZE_FILE="k3s/overlays/prod/kustomization.yaml"
+
+          if [[ "${{ github.ref_name }}" == "main" ]]; then
+            echo "Production Environment Detected (main)"
+            KUSTOMIZE_FILE="k3s/overlays/prod/kustomization.yaml"
+          else
+            echo "Dev Environment Detected (ccid)"
+            KUSTOMIZE_FILE="k3s/overlays/dev/kustomization.yaml"
+          fi
 
           export IMAGE_TAG="${NEW_TAG}"
           export TARGET_IMAGE="${FULL_IMAGE_NAME}"
