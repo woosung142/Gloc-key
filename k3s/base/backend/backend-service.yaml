@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: cctvapi-service
+spec:
+  selector:
+    app: cctvapi
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
