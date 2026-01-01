@@ -39,7 +39,7 @@ alertmanager: #(0.23m / 19.8) cpu/memory
     #    cpu: 3m
     #    memory: 40Mi
 
-prometheus-node-exporter:
+prometheus-node-exporter: # 마스터 노드에도 배포
   tolerations:
     - operator: Exists
 
