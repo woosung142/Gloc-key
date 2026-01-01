@@ -69,7 +69,8 @@ resource "aws_vpc_security_group_egress_rule" "allow_all_outbound" { # 모든 �
   ip_protocol = "-1"
 }
 
-resource "aws_iam_role" "ec2_role" { # EC2 인스턴스용 IAM 역할 생성
+# master 인스턴스용 IAM 역할 및 정책 생성
+resource "aws_iam_role" "ec2_role" {
   name        = "${var.project_name}-ec2-role"
   description = "IAM Role for EC2 Instance"
   assume_role_policy = jsonencode({
@@ -110,7 +111,7 @@ resource "aws_iam_instance_profile" "main" { # 프로파일 -> role -> policy
   role = aws_iam_role.ec2_role.name
 }
 
-resource "aws_iam_user" "cicd_bot" {  # GitHub Actions용 IAM 사용자 생성 - 수정 필요
+resource "aws_iam_user" "cicd_bot" { # GitHub Actions용 IAM 사용자 생성 - 수정 필요
   name = "${var.project_name}-cicd-bot"
 
   tags = {
@@ -153,6 +154,7 @@ resource "aws_iam_role_policy_attachment" "pull_ecr_policy" { # EC2 인스턴스
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+#ssm 파라미터 스토어 접근 권한 부여
 resource "aws_iam_role_policy" "k3s_ssm_policy" {
   name = "k3s_ssm_policy"
   role = aws_iam_role.ec2_role.id
@@ -161,12 +163,12 @@ resource "aws_iam_role_policy" "k3s_ssm_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid      = "AllowSSMParameterAccess"
-        Effect   = "Allow"
-        Action   = [
-          "ssm:PutParameter",    # 토큰 저장 (Master용)
-          "ssm:GetParameter",    # 토큰 조회 (Master 확인용/Worker용)
-          "ssm:DeleteParameter"  # 필요시 삭제
+        Sid    = "AllowSSMParameterAccess"
+        Effect = "Allow"
+        Action = [
+          "ssm:PutParameter",   # 토큰 저장 (Master용)
+          "ssm:GetParameter",   # 토큰 조회 (Master 확인용/Worker용)
+          "ssm:DeleteParameter" # 필요시 삭제
         ]
         Resource = "arn:aws:ssm:ap-northeast-2:*:parameter/${var.project_name}/k3s/*"
       }
@@ -180,8 +182,8 @@ resource "aws_iam_role" "sagemaker_role" {
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [{
-      Action = "sts:AssumeRole"
-      Effect = "Allow"
+      Action    = "sts:AssumeRole"
+      Effect    = "Allow"
       Principal = { Service = "sagemaker.amazonaws.com" }
     }]
   })
@@ -192,3 +194,77 @@ resource "aws_iam_role_policy_attachment" "sagemaker_ecr_readonly" {
   role       = aws_iam_role.sagemaker_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
+# worker 인스턴스용 IAM 역할 및 정책 생성
+resource "aws_iam_role" "worker_role" {
+  name        = "${var.project_name}-worker-role"
+  description = "IAM Role for EC2 worker Instance"
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+#ssm 파라미터 스토어 접근 권한 부여
+resource "aws_iam_role_policy" "worker_ssm_policy" {
+  name = "worker_ssm_policy"
+  role = aws_iam_role.worker_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowSSMParameterAccess"
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameters",
+          "ssm:GetParameter", # 토큰 조회 (Master 확인용/Worker용)
+        ]
+        Resource = "arn:aws:ssm:ap-northeast-2:*:parameter/${var.project_name}/k3s/*"
+      }
+    ]
+  })
+}
+
+# worker DNS-01 인증서 갱신을 위한 Route53 접근 권한 부여
+resource "aws_iam_role_policy" "worker_route53_policy" {
+  name = "worker_route53_policy"
+  role = aws_iam_role.worker_role.id
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : "route53:GetChange",
+        "Resource" : "arn:aws:route53:::change/*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "route53:ChangeResourceRecordSets",
+          "route53:ListResourceRecordSets"
+        ],
+        "Resource" : "arn:aws:route53:::hostedzone/*"
+      },
+      {
+        "Effect" : "Allow",
+        "Action" : "route53:ListHostedZonesByName",
+        "Resource" : "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_instance_profile" "worker_profile" {
+  name = "${var.project_name}-worker-profile"
+  role = aws_iam_role.worker_role.name
+}
+

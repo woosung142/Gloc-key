@@ -1,6 +1,8 @@
 #!/bin/bash
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
+START_TIME=$(date +%s)
+
 echo "[Init] 시작합니다..."
 
 # 필수 패키지 설치
@@ -25,7 +27,7 @@ echo "내 ID는 ${"$"}INSTANCE_ID 입니다."
 # Tailscale 설치
 echo "[Tailscale] 설치 중..."
 curl -fsSL https://tailscale.com/install.sh | sh
-tailscale up --authkey=${tailscale_auth_key} --ssh --hostname=${project_name}-master
+tailscale up --authkey=${tailscale_auth_key} --ssh --hostname=${project_name}-master --advertise-routes=10.0.0.0/16
 
 # K3s 설치
 TS_IP=$(tailscale ip -4)
@@ -61,4 +63,50 @@ chmod 600 /home/ubuntu/.kube/config
 echo 'export KUBECONFIG=/home/ubuntu/.kube/config' >> /home/ubuntu/.bashrc
 chown ubuntu:ubuntu /home/ubuntu/.bashrc
 
-echo "[Done] 모든 작업 완료"
+echo "[Argocd] 설치 시작"
+INSTALL_DIR="/home/ubuntu/argocd-install"
+mkdir -p $INSTALL_DIR
+cd $INSTALL_DIR
+
+cat <<EOF > values.yaml
+${argocd_values}
+EOF
+
+cat <<EOF > kustomization.yaml
+${argocd_kustomize}
+EOF
+
+cat <<EOF > root.yaml
+${root_app_manifest}
+EOF
+
+echo "[Tool] Helm 설치 중..."
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+
+echo "[Tool] Kustomize 설치 중..."
+curl -s "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh" | bash
+mv kustomize /usr/local/bin/
+
+echo "[ArgoCD] 네임스페이스 생성 및 설치"
+kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
+
+kustomize build --enable-helm . | kubectl apply -f -
+
+echo "[ArgoCD] 설치 명령 전달 완료 (Pending 상태 예상)"
+
+echo "[Bootstrap] Root Application 등록"
+sleep 15
+kubectl apply -f root.yaml
+
+END_TIME=$(date +%s)
+DURATION=$((END_TIME - START_TIME))
+MIN=$(($DURATION / 60))
+SEC=$(($DURATION % 60))
+
+echo "[Done] 모든 작업 완료 (소요 시간: ${"$"}{MIN}분 ${"$"}{SEC}초)"
+
+cat <<EOF >> /etc/motd
+-------------------------------------------
+Scripts Complete Time: ${"$"}{MIN}m ${"$"}{SEC}s
+-------------------------------------------
+EOF
