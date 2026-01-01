@@ -41,7 +41,6 @@ alertmanager: #(0.23m / 19.8) cpu/memory
 
 prometheus-node-exporter:
   tolerations:
-    - effect: NoSchedule
       operator: Exists
 
 prometheus:

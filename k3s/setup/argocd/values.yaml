@@ -9,7 +9,7 @@ controller:
       cpu: 100m #10m
       memory: 250Mi
     limits:
-      cpu: 300m #30m
+      #cpu: 300m #30m
       memory: 512Mi
 
 server:
