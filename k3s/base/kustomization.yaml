@@ -11,3 +11,4 @@ resources:
   - redis/redis-deployment.yaml
   - redis/redis-service.yaml
   - redis/redis-pvc.yaml
+  - redis/redis-servicemonitor.yaml

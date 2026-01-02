@@ -15,6 +15,14 @@ spec:
       containers:
         - name: redis
           image: redis:7.0.11-alpine
+          ports:
+            - containerPort: 6379
+
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.80.1-alpine
+          ports:
+            - containerPort: 9121
+
           resources:
             requests:
               cpu: 2m
@@ -22,8 +30,6 @@ spec:
             # limits:
             #   cpu: 6m
             #   memory: 8Mi
-          ports:
-            - containerPort: 6379
             
           volumeMounts:
             - name: redis-storage

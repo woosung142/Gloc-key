@@ -2,6 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: redis-service
+  labels:
+    app: redis
 spec:
   type: ClusterIP
   selector:
@@ -9,3 +11,8 @@ spec:
   ports:
     - port: 6379
       targetPort: 6379
+      name: redis
+
+    - port: 9121
+      targetPort: 9121
+      name: metrics
