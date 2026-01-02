@@ -9,3 +9,5 @@ resources:
   - networking/tls-store.yaml
   - networking/traefik-dashboard.yaml
   - networking/monitoring-route.yaml
+# ecr helper
+  - ecr-helper/ecr-cronjob.yaml
