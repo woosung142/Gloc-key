@@ -51,6 +51,19 @@ resource "aws_vpc_security_group_ingress_rule" "allow_k3s_admin" { # k3s API 트
   to_port     = 6443
 }
 
+# 람다 함수로부터의 Redis (NodePort) 트래픽 허용
+resource "aws_vpc_security_group_ingress_rule" "allow_redis_from_lambda" {
+  security_group_id = aws_security_group.main.id 
+  description       = "Allow Redis NodePort traffic from Lambda"
+
+  referenced_security_group_id = var.lambda_sg_id 
+  
+  # k3s NodePort 번호
+  from_port   = 30001
+  ip_protocol = "tcp"
+  to_port     = 30001
+}
+
 resource "aws_vpc_security_group_ingress_rule" "allow_self" { # 보안 그룹 내의 인스턴스 간 통신 허용 (인바운드)
   security_group_id = aws_security_group.main.id
   description       = "Allow internal traffic"
@@ -292,9 +305,29 @@ resource "aws_iam_role_policy_attachment" "lambda_logs" {
   role       = aws_iam_role.iam_for_lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
 }
+# VPC 내 람다 실행을 위한 네트워크 인터페이스 관리 권한
+resource "aws_iam_role_policy_attachment" "lambda_vpc_access" {
+  role       = aws_iam_role.iam_for_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+}
 # S3 읽기 권한 추가 (lambda)
 resource "aws_iam_role_policy_attachment" "lambda_s3_read" {
   role       = aws_iam_role.iam_for_lambda.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 }
 
+# 람다 전용 보안 그룹 생성
+resource "aws_security_group" "lambda_sg" {
+  name        = "gloc-key-lambda-sg"
+  vpc_id      = var.vpc_id
+
+  # 람다가 외부로 데이터를 보낼 수 있게 허용 (Egress)
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = { Name = "gloc-key-lambda-sg" }
+}

@@ -7,6 +7,12 @@ variable "admin_ip" {
   default     = ""
 }
 
+
+variable "lambda_sg_id" {
+  description = "lambda 보안그룹 Id"
+  type        = string
+}
+
 # variable "lambda_function_name" {
 #   description = "람다 함수 이름"
 #   type        = string

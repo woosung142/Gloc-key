@@ -32,7 +32,7 @@ output "lambda_role_arn" {
   value       = aws_iam_role.iam_for_lambda.arn
 }
 
-# output "lambda_role_arn" {
-#   description = "allow_s3_bucketlambda ARN 주소 정보"
-#   value       = aws_iam_role.iam_for_lambda.arn
-# }
+output "lambda_sg_id" {
+  description = "lambda 보안 그룹 ID"
+  value = aws_security_group.lambda_sg.id
+}

@@ -19,6 +19,8 @@ module "security" {
   # s3_arn = module.s3.s3_arn
 
   admin_ip = "1.241.176.242/32"
+
+  lambda_sg_id = module.security.lambda_sg_id
 }
 # EC2가 뺏어올 고정 IP(EIP)를 미리 생성 (EC2와 별개로 존재해야 함)
 resource "aws_eip" "k3s_ip" {
@@ -145,7 +147,7 @@ module "dns" {
 }
 
 
-# SageMaker 모듈 호출
+# lambda 모듈 호출
 module "lambda" {
   source = "./modules/lambda"
 
@@ -153,7 +155,15 @@ module "lambda" {
 
   # lambda 역할 ARN 주소 가져오기
   execution_role_arn = module.security.lambda_role_arn
+  #lambda 보안그룹 아이디
+  lambda_security_group_id = module.security.lambda_sg_id
 
+  # VPC 정보 전달
+  vpc_id           = module.vpc.vpc_id
+  subnet_ids       = module.vpc.private_subnet_ids
+
+  # tfvars에서 ip 값 
+  redis_host = var.k3s_worker_node_ip
 }
 
 # s3 모듈 호출

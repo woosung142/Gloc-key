@@ -1,4 +1,4 @@
-# 1. index.py를 자동으로 압축하도록 설정
+# 1. index.py 자동 압축
 data "archive_file" "lambda_zip" {
   type        = "zip"
   source_file = "${path.module}/index.py"
@@ -7,10 +7,8 @@ data "archive_file" "lambda_zip" {
 
 # 2. Redis 라이브러리 레이어 정의
 resource "aws_lambda_layer_version" "redis_layer" {
-  # 레이어는 수동으로 만든 zip 파일을 사용 (구조가 복잡하므로)
-  filename   = "${path.module}/redis_layer_payload.zip" 
-  layer_name = "redis-lib-layer"
-
+  filename            = "${path.module}/redis_layer_payload.zip" 
+  layer_name          = "redis-lib-layer"
   compatible_runtimes = ["python3.11", "python3.12"]
 }
 
@@ -24,13 +22,18 @@ resource "aws_lambda_function" "image_status_lambda" {
   handler          = "index.lambda_handler"
   runtime          = "python3.12"
 
-  # 레이어 연결
   layers = [aws_lambda_layer_version.redis_layer.arn]
+
+  # VPC에 연결
+  vpc_config {
+    subnet_ids         = var.subnet_ids
+    security_group_ids = [var.lambda_security_group_id]
+  }
 
   environment {
     variables = {
-      REDIS_HOST = "실제_레디스_엔드포인트_주소" 
-      REDIS_PORT = "6379"
+      REDIS_HOST = var.redis_host
+      REDIS_PORT = 30001  
     }
   }
 }
