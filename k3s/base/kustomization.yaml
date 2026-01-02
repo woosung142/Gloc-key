@@ -13,4 +13,4 @@ resources:
   - redis/redis-pvc.yaml
   - redis/redis-servicemonitor.yaml
 # secrets
-  - secrets/sealed-secrets.yaml
+  - secrets/sealed-backend.yaml
