@@ -150,7 +150,7 @@ resource "aws_iam_role_policy" "route53_update_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "pull_ecr_policy" { # EC2 인스턴스에 ECR 읽기 권한 부여
-  role       = aws_iam_role.ec2_role.name
+  role       = aws_iam_role.worker_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
@@ -266,5 +266,35 @@ resource "aws_iam_role_policy" "worker_route53_policy" {
 resource "aws_iam_instance_profile" "worker_profile" {
   name = "${var.project_name}-worker-profile"
   role = aws_iam_role.worker_role.name
+}
+
+
+# 람다가 수행할 작업에 대한 권한 정의
+resource "aws_iam_role" "iam_for_lambda" {
+  name = "gloc_key_lambda_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+# 람다가 Redis에 접근하거나 로그를 남길 수 있도록 기본 정책 연결
+resource "aws_iam_role_policy_attachment" "lambda_logs" {
+  role       = aws_iam_role.iam_for_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+# S3 읽기 권한 추가 (lambda)
+resource "aws_iam_role_policy_attachment" "lambda_s3_read" {
+  role       = aws_iam_role.iam_for_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess"
 }
 

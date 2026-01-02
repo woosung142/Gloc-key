@@ -6,3 +6,13 @@ variable "admin_ip" {
   type        = string
   default     = ""
 }
+
+# variable "lambda_function_name" {
+#   description = "람다 함수 이름"
+#   type        = string
+# }
+
+# variable "s3_arn" {
+#   description = "s3 arn 주소"
+#   type        = string
+# }

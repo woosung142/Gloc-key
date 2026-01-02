@@ -26,3 +26,13 @@ output "sagemaker_role_arn" {
   description = "SageMaker ARN 주소 정보"
   value       = aws_iam_role.sagemaker_role.arn
 }
+
+output "lambda_role_arn" {
+  description = "lambda ARN 주소 정보"
+  value       = aws_iam_role.iam_for_lambda.arn
+}
+
+# output "lambda_role_arn" {
+#   description = "allow_s3_bucketlambda ARN 주소 정보"
+#   value       = aws_iam_role.iam_for_lambda.arn
+# }

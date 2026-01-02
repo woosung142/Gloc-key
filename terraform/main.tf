@@ -15,6 +15,8 @@ module "security" {
   project_name = "gloc-key"
   vpc_id       = module.vpc.vpc_id
 
+  # lambda_function_name = module.lambda.lambda_name
+  # s3_arn = module.s3.s3_arn
 
   admin_ip = "1.241.176.242/32"
 }
@@ -140,4 +142,29 @@ module "dns" {
   domain_name = "glok.store"
   private_ip  = module.master.private_ip
   public_ip   = aws_eip.k3s_ip.public_ip
+}
+
+
+# SageMaker 모듈 호출
+module "lambda" {
+  source = "./modules/lambda"
+
+  project_name = "gloc-key"
+
+  # lambda 역할 ARN 주소 가져오기
+  execution_role_arn = module.security.lambda_role_arn
+
+}
+
+# s3 모듈 호출
+module "s3" {
+  source = "./modules/s3"
+
+  project_name = "gloc-key"
+
+  # lambda ARN 주소 가져오기
+  lambda_function_arn = module.lambda.lambda_arn
+  # lambda 함수 이름 가져오기
+  lambda_function_name = module.lambda.lambda_name
+
 }
