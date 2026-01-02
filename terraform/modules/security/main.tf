@@ -150,7 +150,7 @@ resource "aws_iam_role_policy" "route53_update_policy" {
 }
 
 resource "aws_iam_role_policy_attachment" "pull_ecr_policy" { # EC2 인스턴스에 ECR 읽기 권한 부여
-  role       = aws_iam_role.ec2_role.name
+  role       = aws_iam_role.worker_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 

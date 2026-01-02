@@ -19,9 +19,9 @@ spec:
             requests:
               cpu: 2m
               memory: 4Mi
-            limits:
-              cpu: 6m
-              memory: 8Mi
+            # limits:
+            #   cpu: 6m
+            #   memory: 8Mi
           ports:
             - containerPort: 6379
             

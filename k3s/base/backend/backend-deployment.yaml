@@ -21,4 +21,4 @@ spec:
             - secretRef:
                 name: cctv-secret
       imagePullSecrets:
-        - name: ghcr-secret
+        - name: ecr-secret
