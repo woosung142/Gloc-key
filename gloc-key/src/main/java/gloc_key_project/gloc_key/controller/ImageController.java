@@ -22,16 +22,18 @@ public class ImageController {
             @RequestBody ImageGenerateRequest request,
             @AuthenticationPrincipal UserDetails userDetails) {
 
-        String jobId = imageService.generateImageProcess(request, userDetails.getUsername());
+        ImageGenerateResponse response = imageService.generateImageProcess(request.getPrompt(), userDetails.getUsername());
 
-        return ResponseEntity.ok(new ImageGenerateResponse(jobId, "이미지 생성이 시작되었습니다."));
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/status/{jobId}")
-    public ResponseEntity<ImageStatusResponse> checkImageStatus(@PathVariable String jobId) {
+    public ResponseEntity<ImageStatusResponse> checkImageStatus(
+            @PathVariable String jobId,
+            @AuthenticationPrincipal UserDetails userDetails) {
 
-        String status = imageService.checkImageStatus(jobId);
+        ImageStatusResponse response = imageService.checkImageStatus(userDetails.getUsername(),jobId);
 
-        return ResponseEntity.ok(new ImageStatusResponse(jobId, status));
+        return ResponseEntity.ok(response);
     }
 }

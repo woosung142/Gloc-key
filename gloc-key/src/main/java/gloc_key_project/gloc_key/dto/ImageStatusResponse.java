@@ -10,5 +10,6 @@ import lombok.NoArgsConstructor;
 public class ImageStatusResponse {
     private String jobId;
     private String status;
+    private String imageUrl;
 //    private String message;
 }
