@@ -1,0 +1,3 @@
+.idea/
+terraform/modules/lambda/python/redis/
+terraform/modules/lambda/python/redis-*-info/
