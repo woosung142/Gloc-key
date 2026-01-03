@@ -1,7 +1,7 @@
 package gloc_key_project.gloc_key.controller;
 
-import gloc_key_project.gloc_key.dto.Reissue_response;
-import gloc_key_project.gloc_key.dto.Signup_request;
+import gloc_key_project.gloc_key.dto.ReissueResponse;
+import gloc_key_project.gloc_key.dto.SignupRequest;
 import gloc_key_project.gloc_key.service.AuthService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,25 +9,23 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api")
 public class AuthController {
     private final AuthService authService;
 
-    @PostMapping("/api/signup")
-    public ResponseEntity<?> signupProcess(Signup_request signupRequest) {
+    @PostMapping("/signup")
+    public ResponseEntity<?> signupProcess(SignupRequest signupRequest) {
 
         authService.SignupProcess(signupRequest);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/api/reissue")
+    @PostMapping("/reissue")
     public ResponseEntity<?> reissueProcess(HttpServletRequest request, HttpServletResponse response) {
 
         String refreshToken = null;
@@ -38,7 +36,7 @@ public class AuthController {
         }
 
 
-        Reissue_response newToken = authService.reissueProcess(refreshToken);
+        ReissueResponse newToken = authService.reissueProcess(refreshToken);
 
         response.setHeader("access", newToken.getNewAccessToken());
         response.addCookie(createCookie("refresh", newToken.getNewRefreshToken()));
@@ -47,7 +45,7 @@ public class AuthController {
 
     }
 
-    @DeleteMapping("/api/logout")
+    @DeleteMapping("/logout")
     public ResponseEntity<?> logoutProcess(HttpServletRequest request, HttpServletResponse response) {
         String refreshToken = null;
         for (Cookie cookie : request.getCookies()) {

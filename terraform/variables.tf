@@ -9,3 +9,8 @@ variable "db_password" {
   type        = string
   sensitive   = true
 }
+
+variable "k3s_worker_node_ip" {
+  description = "lambda에서 접근을 위한 워커노드 ip"
+  type        = string
+}
