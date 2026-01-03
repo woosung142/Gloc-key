@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: weatherapi-ingress
+  name: gloc-key-ingress
   namespace: default
   annotations:
     kubernetes.io/ingress.class: "traefik"  
@@ -17,17 +17,10 @@ spec:
                 name: backend-service
                 port:
                   number: 80
-          - path: /get_cctv
-            pathType: Prefix
-            backend:
-              service:
-                name: cctvapi-service
-                port:
-                  number: 80
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: frontend-service
-                port:
-                  number: 80
+          # - path: /
+          #   pathType: Prefix
+          #   backend:
+          #     service:
+          #       name: frontend-service
+          #       port:
+          #         number: 80
