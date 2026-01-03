@@ -36,4 +36,15 @@ public class ImageController {
 
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/re-generate/{oldJobId}")
+    public ResponseEntity<ImageGenerateResponse> generateImageProcess(
+            @PathVariable String oldJobId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        // 새로운 jobId를 발급받으며 재생성 프로세스 시작
+        ImageGenerateResponse response = imageService.reGenerateImageProcess(oldJobId, userDetails.getUsername());
+
+        return ResponseEntity.ok(response);
+    }
 }
