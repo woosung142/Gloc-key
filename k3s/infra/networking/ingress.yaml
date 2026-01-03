@@ -6,6 +6,10 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: "traefik"  
 spec:
+  tls:
+    - hosts:
+        - www.glok.store      
+      secretName: glok-tls-secret
   rules:
     - host: www.glok.store
       http:
