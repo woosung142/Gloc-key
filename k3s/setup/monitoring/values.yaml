@@ -73,6 +73,11 @@ grafana:
   defaultDashboardsTimezone: KST
   adminPassword: "qwer1234!" # Grafana 관리자 비밀번호 설정
   sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
     datasources:
       enabled: true
       defaultDatasourceEnabled: false
