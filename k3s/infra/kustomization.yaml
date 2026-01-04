@@ -12,3 +12,5 @@ resources:
   - networking/ingress.yaml
 # ecr helper
   - ecr-helper/ecr-cronjob.yaml
+# node reaper
+  - node-reaper/node-cronjob.yaml
