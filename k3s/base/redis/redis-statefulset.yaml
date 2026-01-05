@@ -1,8 +1,9 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: redis-deployment
+  name: redis
 spec:
+  serviceName: "redis-headless"
   replicas: 1
   selector:
     matchLabels:
@@ -18,22 +19,28 @@ spec:
           ports:
             - containerPort: 6379
 
-        - name: redis-exporter
-          image: oliver006/redis_exporter:v1.80.1-alpine
-          ports:
-            - containerPort: 9121
-
           resources:
             requests:
               cpu: 2m
               memory: 4Mi
-            # limits:
-            #   cpu: 6m
-            #   memory: 8Mi
-            
+            limits:
+              memory: 24Mi
+
           volumeMounts:
             - name: redis-storage
               mountPath: /data
+
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.80.1-alpine
+          ports:
+            - containerPort: 9121
+          resources:
+            requests:
+              cpu: 2m
+              memory: 10Mi
+            limits:
+              memory: 30Mi
+        
       volumes:
         - name: redis-storage
           persistentVolumeClaim:

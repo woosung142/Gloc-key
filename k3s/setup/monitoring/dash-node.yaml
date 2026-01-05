@@ -15640,7 +15640,7 @@ data:
       "refresh": "1m",
       "schemaVersion": 42,
       "tags": [
-        "Main",
+        "main",
         "linux"
       ],
       "templating": {

@@ -27,7 +27,6 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
-      "id": 26,
       "links": [],
       "panels": [
         {
@@ -394,7 +393,7 @@ data:
               "target": ""
             }
           ],
-          "title": "Commands Executed / sec",
+          "title": "초당 처리 명령 수",
           "type": "timeseries"
         },
         {
@@ -516,7 +515,7 @@ data:
               "target": ""
             }
           ],
-          "title": "Hits / Misses per Sec",
+          "title": "초당 캐시 적중 / 실패 수",
           "type": "timeseries"
         },
         {
@@ -649,7 +648,7 @@ data:
               "step": 240
             }
           ],
-          "title": "Total Memory Usage",
+          "title": "전체 메모리 사용량",
           "type": "timeseries"
         },
         {
@@ -763,7 +762,7 @@ data:
               "step": 240
             }
           ],
-          "title": "Network I/O",
+          "title": "네트워크 송수신량",
           "type": "timeseries"
         },
         {
@@ -868,7 +867,7 @@ data:
               "target": ""
             }
           ],
-          "title": "Total Items per DB",
+          "title": "DB별 키 개수",
           "type": "timeseries"
         },
         {
@@ -985,7 +984,7 @@ data:
               "step": 240
             }
           ],
-          "title": "Expiring vs Not-Expiring Keys",
+          "title": "만료 키 / 비만료 키 현황",
           "type": "timeseries"
         },
         {
@@ -1161,7 +1160,7 @@ data:
               "step": 240
             }
           ],
-          "title": "Expired / Evicted",
+          "title": "만료 / 강제 제거된 키",
           "type": "timeseries"
         },
         {
@@ -1264,7 +1263,7 @@ data:
               "step": 240
             }
           ],
-          "title": "Command Calls / sec",
+          "title": "초당 Redis 명령 호출 수",
           "type": "timeseries"
         },
         {
@@ -1363,7 +1362,7 @@ data:
               "refId": "A"
             }
           ],
-          "title": "Redis connected clients",
+          "title": "Redis에 연결된 클라이언트 수",
           "type": "timeseries"
         }
       ],
@@ -1371,9 +1370,9 @@ data:
       "refresh": "30s",
       "schemaVersion": 42,
       "tags": [
-        "Main",
         "prometheus",
-        "redis"
+        "redis",
+        "main"
       ],
       "templating": {
         "list": [
@@ -1443,12 +1442,12 @@ data:
         ]
       },
       "time": {
-        "from": "now-5m",
+        "from": "now-30m",
         "to": "now"
       },
       "timepicker": {},
       "timezone": "browser",
       "title": "Redis",
       "uid": "xDLNRKUWz",
-      "version": 2
+      "version": 4
     }

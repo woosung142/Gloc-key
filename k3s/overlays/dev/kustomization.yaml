@@ -18,3 +18,23 @@ patches:
           spec:
             nodeSelector:
               role: worker
+  - target:
+      kind: StatefulSet
+      name: redis
+    patch: |-
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: redis
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              node-role.kubernetes.io/master: "true"
+            tolerations:
+            - key: "node-role.kubernetes.io/master"
+              operator: "Exists"
+              effect: "NoSchedule"
+            - key: "node-role.kubernetes.io/control-plane"
+              operator: "Exists"
+              effect: "NoSchedule"
