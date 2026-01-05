@@ -1,15 +1,19 @@
 package gloc_key_project.gloc_key.service;
 
 import gloc_key_project.gloc_key.dto.ImageGenerateResponse;
+import gloc_key_project.gloc_key.dto.ImageHistoryResponse;
 import gloc_key_project.gloc_key.dto.ImageStatusResponse;
 import gloc_key_project.gloc_key.entity.Image;
 import gloc_key_project.gloc_key.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -67,9 +71,9 @@ public class ImageService {
     }
 
     // 3. 기존 프롬프트를 재사용한 이미지 재생성
-    public ImageGenerateResponse reGenerateImageProcess(String oldJobId, String username) {
+    public ImageGenerateResponse reGenerateImageProcess(String oldJobId, Long userId, String username) {
         // 기존 작업의 설정(프롬프트)을 조회 (Redis 캐시 우선, RDS 백업)
-        String oldPrompt = getPromptFromRedisOrDb(oldJobId, username);
+        String oldPrompt = getPromptFromRedisOrDb(oldJobId, userId, username);
 
         // 새로운 작업 세션 생성 및 Redis 등록
         String newJobId = saveTaskToRedis(username, oldPrompt);
@@ -78,6 +82,22 @@ public class ImageService {
         sagemakerService.call(oldPrompt, newJobId, username);
 
         return new ImageGenerateResponse(newJobId, "이미지 재생성을 시작합니다.");
+    }
+
+    public Page<ImageHistoryResponse> getImageHistory(Long userId, int page, int size) {
+
+        // created_at 필드 기준 내림차순
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        // 페이징 조회
+        Page<Image> imagePage = imageRepository.findAllByUser_Id(userId, pageable);
+
+        return imagePage.map(image -> ImageHistoryResponse.builder()
+                .jobId(image.getJobId())
+                .prompt(image.getPrompt())
+                .imageUrl(s3Service.createPresignedGetUrl(image.getS3Key()))
+                .createdAt(image.getCreatedAt())
+                .build());
+
     }
 
 
@@ -98,7 +118,7 @@ public class ImageService {
     }
 
     // 프롬프트 조회
-    private String getPromptFromRedisOrDb(String jobId, String username) {
+    private String getPromptFromRedisOrDb(String jobId, Long userId, String username) {
         String key = "image:job:" + jobId;
 
         // 1. Redis 우선 조회
@@ -108,16 +128,19 @@ public class ImageService {
             return (String) cachedPrompt;
         }
 
-        // 2. Redis 만료 시 RDS에서 이력 데이터 조회
+        // 2. Redis 만료 시 RDS에서 조회
         Image image = imageRepository.findByJobId(jobId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 작업입니다."));
 
-        validateOwner(image.getUser().getUsername(), username);
+        // DB에 기록된 userId와 현재 요청자의 id가 일치하는지 확인
+        if (!image.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("해당 작업에 대한 권한이 없습니다.");
+        }
 
         return image.getPrompt();
     }
 
-    // 요청 권한 검증
+    // 요청 권한 검증 Redis
     private void validateOwner(String owner, String requester) {
         if (owner == null || !owner.equals(requester)) {
             throw new AccessDeniedException("해당 작업에 대한 권한이 없습니다.");
