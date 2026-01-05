@@ -33,9 +33,13 @@ patches:
               node-role.kubernetes.io/master: "true"
             tolerations:
             - key: "CriticalAddonsOnly"
-              operator: "Equal"
-              value: "true"
-              effect: "NoExecute"
+              operator: "Exists"
+            - key: "node-role.kubernetes.io/master"
+              operator: "Exists"
+              effect: "NoSchedule"
+            - key: "node-role.kubernetes.io/control-plane"
+              operator: "Exists"
+              effect: "NoSchedule"
         volumeClaimTemplates:
         - metadata:
             name: redis-data
