@@ -50,10 +50,19 @@ public class ImageService {
         }
 
         String status = (String) taskInfo.get("status");
+        String imageUrl = null;
+
 
         // 생성 완료 시 S3 보안 접근을 위한 Presigned URL 발급
-        String imageUrl = "COMPLETED".equals(status) ? s3Service.createPresignedGetUrl(username, jobId) : null;
+        if ("COMPLETED".equals(status)) {
+            String s3Key = (String) taskInfo.get("s3Key");
 
+            if (s3Key == null) {
+                throw new IllegalStateException("이미지 경로 정보가 존재하지 않습니다.");
+            }
+
+            imageUrl = s3Service.createPresignedGetUrl(s3Key);
+        }
         return new ImageStatusResponse(jobId, status, imageUrl);
     }
 
