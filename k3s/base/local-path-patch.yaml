@@ -12,7 +12,7 @@ data:
     spec:
       containers:
       - name: helper-pod
-        image: rancher/library-busybox:1.28.0
+        image: busybox:1.28.0
         imagePullPolicy: IfNotPresent
         command: ["sh", "-c", "mkdir -p /data && chmod 777 /data"]
       tolerations:
