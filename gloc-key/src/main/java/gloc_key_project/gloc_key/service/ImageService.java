@@ -37,7 +37,7 @@ public class ImageService {
     // 2. 이미지 생성 상태 및 결과 조회 (Polling용 API)
     public ImageStatusResponse checkImageStatus(String username, String jobId) {
         // Redis Hash 작업 메타데이터 일괄 조회
-        Map<Object, Object> taskInfo = redisTemplate.opsForHash().entries("image:task:" + jobId);
+        Map<Object, Object> taskInfo = redisTemplate.opsForHash().entries("image:job:" + jobId);
 
         // 작업 존재 여부 확인 (TTL 만료 포함)
         if (taskInfo.isEmpty()) {
@@ -75,7 +75,7 @@ public class ImageService {
     // 비동기 작업 상태 관리를 위한 Redis Hash 저장 로직
     private String saveTaskToRedis(String username, String prompt) {
         String jobId = UUID.randomUUID().toString();
-        String key = "image:task:" + jobId;
+        String key = "image:job:" + jobId;
 
         Map<String, String> data = Map.of(
                 "status", "PENDING",
@@ -90,7 +90,7 @@ public class ImageService {
 
     // 프롬프트 조회
     private String getPromptFromRedisOrDb(String jobId, String username) {
-        String key = "image:task:" + jobId;
+        String key = "image:job:" + jobId;
 
         // 1. Redis 우선 조회
         Object cachedPrompt = redisTemplate.opsForHash().get(key, "prompt");

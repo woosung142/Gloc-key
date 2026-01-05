@@ -30,7 +30,8 @@ public class SagemakerService {
         try {
             log.info("이미지 생성 시작 - 사용자: {}, 작업ID: {}", username, jobId);
             // Redis 상태 업데이트
-            redisTemplate.opsForValue().set("image:job:" + jobId, "PROCESSING");
+//            redisTemplate.opsForValue().set("image:job:" + jobId, "PROCESSING");
+            redisTemplate.opsForHash().put("image:job:" + jobId, "status", "PROCESSING");
 
             // JSON 페이로드 구성
             Map<String, String> payloadMap = Map.of(
@@ -47,11 +48,12 @@ public class SagemakerService {
                     .build();
 
             // SageMaker 호출
-            sageMakerRuntimeClient.invokeEndpoint(request);
+//            sageMakerRuntimeClient.invokeEndpoint(request);
             log.info("SageMaker 호출 성공 - 작업ID: {}", jobId);
 
         } catch (Exception e) {
-            redisTemplate.opsForValue().set("image:job:" + jobId, "FAILED");
+            redisTemplate.opsForHash().put("image:job:" + jobId, "status", "FAILED");
+            redisTemplate.opsForHash().put("image:job:" + jobId, "error", e.getMessage());
             log.error("SageMaker 호출 실패 - 작업ID: {}, 사유: {}", jobId, e.getMessage());
         }
     }
