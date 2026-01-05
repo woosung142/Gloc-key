@@ -162,8 +162,14 @@ module "lambda" {
   vpc_id           = module.vpc.vpc_id
   subnet_ids       = module.vpc.private_subnet_ids
 
-  # tfvars에서 ip 값 
+  # tfvars 값 
   redis_host = var.k3s_worker_node_ip
+
+  db_host = var.PostgreSQL_host
+  db_name = var.PostgreSQL_name
+  db_user = var.PostgreSQL_user
+  db_password = var.PostgreSQL_password
+
 }
 
 # s3 모듈 호출

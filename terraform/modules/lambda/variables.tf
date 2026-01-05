@@ -27,3 +27,20 @@ variable "redis_host" {
   description = "EC2 Private IP for Redis"
   type        = string
 }
+
+variable "db_host" {
+  description = "Postgresql Host"
+  type        = string
+}
+variable "db_name" {
+  description = "Postgresql DB명"
+  type        = string
+}
+variable "db_user" {
+  description = "Postgresql 접근 ID"
+  type        = string
+}
+variable "db_password" {
+  description = "Postgresql 접근 Password"
+  type        = string
+}
