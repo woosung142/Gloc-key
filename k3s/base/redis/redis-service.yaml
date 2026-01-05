@@ -1,6 +1,20 @@
 apiVersion: v1
 kind: Service
 metadata:
+  name: redis-headless  # StatefulSet이랑 연결될 이름
+  labels:
+    app: redis
+spec:
+  ports:
+  - port: 6379
+    name: redis
+  clusterIP: None
+  selector:
+    app: redis
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: redis-service
   labels:
     app: redis
