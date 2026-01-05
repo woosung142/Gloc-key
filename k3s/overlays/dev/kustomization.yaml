@@ -36,3 +36,12 @@ patches:
               operator: "Equal"
               value: "true"
               effect: "NoExecute"
+        volumeClaimTemplates:
+        - metadata:
+            name: redis-data
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            storageClassName: "local-path"
+            resources:
+              requests:
+                storage: 1Gi

@@ -40,8 +40,3 @@ spec:
               memory: 10Mi
             limits:
               memory: 30Mi
-        
-      volumes:
-        - name: redis-data
-          persistentVolumeClaim:
-            claimName: redis-pvc

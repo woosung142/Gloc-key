@@ -10,7 +10,7 @@ resources:
 # redis
   - redis/redis-statefulset.yaml
   - redis/redis-service.yaml
-  - redis/redis-pvc.yaml
+  #- redis/redis-pvc.yaml
   - redis/redis-servicemonitor.yaml
 # secrets
   - secrets/sealed-backend.yaml
