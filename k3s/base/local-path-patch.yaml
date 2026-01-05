@@ -16,7 +16,5 @@ data:
         imagePullPolicy: IfNotPresent
         command: ["sh", "-c", "mkdir -p /data && chmod 777 /data"]
       tolerations:
-      - key: "CriticalAddonsOnly"
-        operator: "Equal"
-        value: "true"
-        effect: "NoExecute"
+      - key: CriticalAddonsOnly
+        operator: Exists
