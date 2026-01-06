@@ -14,3 +14,17 @@ resources:
   - ecr-helper/ecr-cronjob.yaml
 # node reaper
   - node-reaper/node-cronjob.yaml
+
+# storage
+patches:
+  - path: storage/manager-patch.yaml
+    target:
+      kind: Deployment
+      name: local-path-provisioner
+      namespace: kube-system
+
+  - path: storage/helper-patch.yaml
+    target:
+      kind: ConfigMap
+      name: local-path-config
+      namespace: kube-system

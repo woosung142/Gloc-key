@@ -14,6 +14,3 @@ resources:
   - redis/redis-servicemonitor.yaml
 # secrets
   - secrets/sealed-backend.yaml
-
-# local-path storage class patch
-  - local-path-patch.yaml

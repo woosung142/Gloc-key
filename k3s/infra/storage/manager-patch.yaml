@@ -1,0 +1,14 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: local-path-provisioner
+  namespace: kube-system
+spec:
+  template:
+    spec:
+      nodeSelector:
+        node-role.kubernetes.io/control-plane: "true"
+      tolerations:
+        - key: "CriticalAddonsOnly"
+          operator: "Exists"
+          effect: "NoExecute"
