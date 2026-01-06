@@ -20,12 +20,6 @@ resources:
 
 # storage
 patches:
-  - path: storage/manager-patch.yaml
-    target:
-      kind: Deployment
-      name: local-path-provisioner
-      namespace: kube-system
-
   - path: storage/helper-patch.yaml
     target:
       kind: ConfigMap
