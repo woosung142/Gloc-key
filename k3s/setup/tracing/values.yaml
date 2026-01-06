@@ -1,5 +1,5 @@
 nodeSelector:
-  role: worker2
+  role: worker
 
 tempo:
   storage:
