@@ -50,12 +50,20 @@ def lambda_handler(event, context):
     conn = None
 
     try:
+        print("시작할게")
         if "Records" in event:
+            print('들어옴')
             # 1️⃣ S3 정보 및 작업 키 추출 (image:job 방식)
-            username, job_id, s3_key = extract_job_info(event)
-            job_key = f"image:job:{job_id}" 
 
-            redis_client.ping()
+            print("1. 정보 추출 시작")
+            username, job_id, s3_key = extract_job_info(event)
+            job_key = f"image:job:{job_id}"
+            
+            print(f"2. Redis 연결 시도: {os.environ['REDIS_HOST']}")
+            # ping()에서 타임아웃 나면 Redis 보안 그룹 문제
+            redis_client.ping() 
+            print("✅ Redis 연결 성공")
+
 
             # Redis 작업 존재 여부 확인
             task_info = redis_client.hgetall(job_key)
@@ -73,10 +81,12 @@ def lambda_handler(event, context):
                 return {"statusCode": 200}
 
             # 2️⃣ RDS(PostgreSQL) 최종 데이터 저장
+            print(f"3. RDS 연결 시도: {os.environ['DB_HOST']}")
             conn = get_db_connection()
+            print("✅ RDS 연결 성공")
             with conn.cursor() as cur:
                 # Username으로 User 테이블의 ID(FK) 조회
-                cur.execute("SELECT id FROM users WHERE username = %s", (username,))
+                cur.execute("SELECT id FROM gloc_user WHERE username = %s", (username,))
                 user_row = cur.fetchone()
                 if not user_row:
                     raise Exception(f"DB에서 사용자를 찾을 수 없습니다: {username}")
@@ -84,7 +94,7 @@ def lambda_handler(event, context):
 
                 # Image 테이블에 생성 정보 INSERT
                 insert_query = """
-                    INSERT INTO images (job_id, user_id, prompt, s3_key, created_at)
+                    INSERT INTO image (jobid, user_id, prompt, s3key, createdat)
                     VALUES (%s, %s, %s, %s, %s)
                 """
                 cur.execute(insert_query, (

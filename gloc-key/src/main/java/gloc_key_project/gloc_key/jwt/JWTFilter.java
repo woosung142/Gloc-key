@@ -49,11 +49,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
 
         // 사용자 정보 추출
+        Long id = jwtUtil.getId(accessToken);
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
 
         User user = User.builder()
+                .id(id)
                 .username(username)
                 .password("password")
                 .role(role)

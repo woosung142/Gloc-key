@@ -7,18 +7,11 @@ resource "aws_db_subnet_group" "main" {
   tags = { Name = "${var.project_name}-db-subnet-group" }
 }
 
-# 2. 보안 그룹 (EC2에서 오는 접속만 허용)
+# 2. 보안 그룹
 resource "aws_security_group" "rds_sg" {
   name        = "${var.project_name}-rds-sg"
-  description = "Allow traffic from EC2"
+  description = "Allow traffic from EC2" //ec2,lambda 접근권한임 
   vpc_id      = var.vpc_id
-
-  ingress {
-    from_port       = 5432 # postgreSQL
-    to_port         = 5432
-    protocol        = "tcp"
-    security_groups = [var.app_sg_id] # ★ 핵심: EC2 보안그룹 ID만 허용
-  }
 
   egress {
     from_port   = 0
@@ -26,6 +19,26 @@ resource "aws_security_group" "rds_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_security_group_rule" "rds_from_app" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+
+  security_group_id        = aws_security_group.rds_sg.id
+  source_security_group_id = var.app_sg_id
+}
+
+resource "aws_security_group_rule" "rds_from_lambda" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+
+  security_group_id        = aws_security_group.rds_sg.id
+  source_security_group_id = var.lambda_sg_id
 }
 
 
@@ -36,7 +49,7 @@ resource "aws_db_instance" "default" {
   # 엔진 설정 (postgreSQL 예시)
   engine         = "postgres"
   engine_version = "17.6"
-  instance_class = "db.t3.micro" # 가장 쌈
+  instance_class = "db.t3.micro"
 
   allocated_storage = 20
   storage_type      = "gp2"
