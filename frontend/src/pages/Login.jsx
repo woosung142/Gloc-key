@@ -31,6 +31,8 @@ export default function Login() {
       // accessToken을 로컬 스토리지에 저장
       localStorage.setItem("accessToken", accessToken);
 
+      console.log("로그인 성공");
+
       // 로그인 성공 후 메인 페이지로 이동
       navigate("/");
     } catch (e) {

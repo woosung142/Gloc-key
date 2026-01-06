@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "./client";
 
 export const login = async (username, password) => {
   const formData = new FormData();
