@@ -27,6 +27,6 @@ statefulSet:
   enabled: true
 
 securityContext:
-  fsGroup: 10001
-  runAsUser: 10001
-  runAsNonRoot: true
+  runAsUser: 0
+  # fsGroup: 10001
+  # runAsNonRoot: true
