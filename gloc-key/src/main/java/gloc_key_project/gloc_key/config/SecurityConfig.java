@@ -52,25 +52,42 @@ public class SecurityConfig {
         loginFilter.setFilterProcessesUrl("/api/login");
         http
                 //cors 설정
-                .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
                     @Override
-                    public @Nullable CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        //허용할
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                        //허용할 메서드
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
-                        configuration.setAllowCredentials(true);
-                        //허용할 헤더
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
-                        configuration.setMaxAge(3600L);
-                        //Authorization 헤더 허용
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                        // 허용 Origin
+                        configuration.setAllowedOrigins(List.of(
+                                "http://localhost:5173",
+                                "https://www.glok.store"
+                        ));
 
+                        // 허용 메서드
+                        configuration.setAllowedMethods(List.of(
+                                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                        ));
+
+                        // 쿠키 허용 (refreshToken)
+                        configuration.setAllowCredentials(true);
+
+                        // 프론트 → 서버 요청 시 허용 헤더
+                        configuration.setAllowedHeaders(List.of(
+                                "Content-Type",
+                                "access"
+                        ));
+
+                        // 서버 → 프론트 노출 헤더
+                        configuration.setExposedHeaders(List.of(
+                                "access"
+                        ));
+
+                        configuration.setMaxAge(3600L);
                         return configuration;
                     }
-                })))
+                }))
+
 
                 //csrf 비활성화
                 .csrf((auth) -> auth.disable())
