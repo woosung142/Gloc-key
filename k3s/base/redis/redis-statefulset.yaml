@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  serviceName: "redis-headless"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+        - name: redis
+          image: redis:7.0.11-alpine
+          ports:
+            - containerPort: 6379
+
+          resources:
+            requests:
+              cpu: 2m
+              memory: 4Mi
+            limits:
+              memory: 24Mi
+
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+
+        - name: redis-exporter
+          image: oliver006/redis_exporter:v1.80.1-alpine
+          ports:
+            - containerPort: 9121
+          resources:
+            requests:
+              cpu: 2m
+              memory: 10Mi
+            limits:
+              memory: 30Mi

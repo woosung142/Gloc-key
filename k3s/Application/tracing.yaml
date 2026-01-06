@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: sealed-secrets
+  name: tracing
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
@@ -10,10 +10,10 @@ spec:
   source:
     repoURL: https://github.com/woosung142/Gloc-key.git
     targetRevision: ccid
-    path: k3s/setup/sealed-secrets
+    path: k3s/setup/tracing
   destination:
     server: https://kubernetes.default.svc
-    namespace: sealed-secrets
+    namespace: tracing
 
   syncPolicy:
     automated:
@@ -21,3 +21,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - ServerSideApply=true

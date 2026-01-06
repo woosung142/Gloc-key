@@ -1,0 +1,51 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
+    newTag: ccid-152e33f
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: all
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              role: worker
+  - target:
+      kind: StatefulSet
+      name: redis
+    patch: |-
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: redis
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              node-role.kubernetes.io/master: "true"
+            tolerations:
+            - key: "CriticalAddonsOnly"
+              operator: "Exists"
+            - key: "node-role.kubernetes.io/master"
+              operator: "Exists"
+              effect: "NoSchedule"
+            - key: "node-role.kubernetes.io/control-plane"
+              operator: "Exists"
+              effect: "NoSchedule"
+        volumeClaimTemplates:
+        - metadata:
+            name: redis-data
+          spec:
+            accessModes: [ "ReadWriteOnce" ]
+            storageClassName: "local-path"
+            resources:
+              requests:
+                storage: 1Gi

@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+# backend
+  - backend/backend-deployment.yaml
+  - backend/backend-service.yaml
+# # frontend
+#   - frontend/frontend-deployment.yaml
+#   - frontend/frontend-service.yaml
+# redis
+  - redis/redis-statefulset.yaml
+  - redis/redis-service.yaml
+  #- redis/redis-pvc.yaml
+  - redis/redis-servicemonitor.yaml
+# secrets
+  - secrets/sealed-backend.yaml

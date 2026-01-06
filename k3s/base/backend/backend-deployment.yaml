@@ -14,11 +14,18 @@ spec:
     spec:
       containers:
         - name: backend
-          image: ghcr.io/woosung142/Gloc-key/cctvap:main
+          image: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
           ports:
             - containerPort: 8080
-          envFrom:
-            - secretRef:
-                name: cctv-secret
+
+          volumeMounts:
+            - name: config-volume           
+              mountPath: /app/config            
+              readOnly: true
+      volumes:
+        - name: config-volume
+          secret:
+            secretName: backend-secret
+
       imagePullSecrets:
-        - name: ghcr-secret
+        - name: ecr-secret

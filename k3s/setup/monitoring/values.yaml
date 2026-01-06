@@ -48,8 +48,8 @@ prometheus:
     nodeSelector:
       role: worker
     scrapeInterval: "1m" # 스크랩 간격을 1분
-    retention: "30d" # 데이터 보존 기간을 10일
-    retentionSize: "13GiB"
+    retention: "15d" # 데이터 보존 기간을 10일
+    retentionSize: "10GiB"
     resources: #(18.2m / 414) cpu/memory
       requests:
         cpu: 60m
@@ -58,14 +58,14 @@ prometheus:
       #   cpu: 120m
       #   memory: 800Mi
 
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: local-path
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 15Gi # 저장 용량을 15Gi
+    # storageSpec:
+    #   volumeClaimTemplate:
+    #     spec:
+    #       storageClassName: local-path
+    #       accessModes: ["ReadWriteOnce"]
+    #       resources:
+    #         requests:
+    #           storage: 15Gi # 저장 용량을 15Gi
 
 grafana:
   nodeSelector:
@@ -73,6 +73,11 @@ grafana:
   defaultDashboardsTimezone: KST
   adminPassword: "qwer1234!" # Grafana 관리자 비밀번호 설정
   sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      labelValue: "1"
+      searchNamespace: ALL
     datasources:
       enabled: true
       defaultDatasourceEnabled: false
