@@ -15,8 +15,12 @@ module "security" {
   project_name = "gloc-key"
   vpc_id       = module.vpc.vpc_id
 
+  # lambda_function_name = module.lambda.lambda_name
+  # s3_arn = module.s3.s3_arn
 
   admin_ip = "1.241.176.242/32"
+
+  lambda_sg_id = module.security.lambda_sg_id
 }
 # EC2가 뺏어올 고정 IP(EIP)를 미리 생성 (EC2와 별개로 존재해야 함)
 resource "aws_eip" "k3s_ip" {
@@ -67,7 +71,7 @@ module "worker" {
   ssm_token_path     = "/gloc-key/k3s/node-token"
 }
 
-# 3. ★ 신규 RDS 모듈 추가
+# 3. RDS 모듈 추가
 module "rds" {
   source = "./modules/rds"
 
@@ -77,11 +81,12 @@ module "rds" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids # 혹은 public_subnet_ids
 
-  # EC2(보안) 모듈에서 EC2 보안 그룹 ID 가져오기
-  # (RDS가 EC2의 접속을 허용해야 하니까요)
+  # EC2 모듈에서 EC2 보안 그룹 ID 가져오기
   app_sg_id = module.security.sg_id
 
-  # 비밀번호는 tfvars나 환경변수에서 관리 추천
+  lambda_sg_id = module.security.lambda_sg_id
+
+  # 비밀번호는 
   db_password = var.db_password
 }
 
@@ -140,4 +145,43 @@ module "dns" {
   domain_name = "glok.store"
   private_ip  = module.master.private_ip
   public_ip   = aws_eip.k3s_ip.public_ip
+}
+
+
+# lambda 모듈 호출
+module "lambda" {
+  source = "./modules/lambda"
+
+  project_name = "gloc-key"
+
+  # lambda 역할 ARN 주소 가져오기
+  execution_role_arn = module.security.lambda_role_arn
+  #lambda 보안그룹 아이디
+  lambda_security_group_id = module.security.lambda_sg_id
+
+  # VPC 정보 전달
+  vpc_id           = module.vpc.vpc_id
+  subnet_ids       = module.vpc.private_subnet_ids
+
+  # tfvars 값 
+  redis_host = var.k3s_worker_node_ip
+
+  db_host = var.PostgreSQL_host
+  db_name = var.PostgreSQL_name
+  db_user = var.PostgreSQL_user
+  db_password = var.PostgreSQL_password
+
+}
+
+# s3 모듈 호출
+module "s3" {
+  source = "./modules/s3"
+
+  project_name = "gloc-key"
+
+  # lambda ARN 주소 가져오기
+  lambda_function_arn = module.lambda.lambda_arn
+  # lambda 함수 이름 가져오기
+  lambda_function_name = module.lambda.lambda_name
+
 }

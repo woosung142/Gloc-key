@@ -1,8 +1,8 @@
 package gloc_key_project.gloc_key.service;
 
 import gloc_key_project.gloc_key.customException.AuthException;
-import gloc_key_project.gloc_key.dto.Reissue_response;
-import gloc_key_project.gloc_key.dto.Signup_request;
+import gloc_key_project.gloc_key.dto.ReissueResponse;
+import gloc_key_project.gloc_key.dto.SignupRequest;
 //import gloc_key_project.gloc_key.entity.RefreshToken;
 import gloc_key_project.gloc_key.entity.User;
 import gloc_key_project.gloc_key.jwt.JWTUtil;
@@ -15,8 +15,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -30,7 +28,7 @@ public class AuthService {
 
 
     //회원가입 로직
-    public void SignupProcess(Signup_request signupRequest) {
+    public void SignupProcess(SignupRequest signupRequest) {
 
         String username = signupRequest.getUsername();
         String password = signupRequest.getPassword();
@@ -51,7 +49,7 @@ public class AuthService {
     }
 
     // 토큰 재발급 로직
-    public Reissue_response reissueProcess(String refreshToken) {
+    public ReissueResponse reissueProcess(String refreshToken) {
 
         // 1. refreshToken 유무 검증
         if (refreshToken == null) {
@@ -99,7 +97,7 @@ public class AuthService {
                 TimeUnit.DAYS
         );
 
-        return new Reissue_response(newAccessToken, newRefreshToken);
+        return new ReissueResponse(newAccessToken, newRefreshToken);
     }
 
     @Transactional
