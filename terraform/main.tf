@@ -71,7 +71,7 @@ module "worker" {
   ssm_token_path     = "/gloc-key/k3s/node-token"
 }
 
-# 3. ★ 신규 RDS 모듈 추가
+# 3. RDS 모듈 추가
 module "rds" {
   source = "./modules/rds"
 
@@ -81,11 +81,12 @@ module "rds" {
   vpc_id             = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids # 혹은 public_subnet_ids
 
-  # EC2(보안) 모듈에서 EC2 보안 그룹 ID 가져오기
-  # (RDS가 EC2의 접속을 허용해야 하니까요)
+  # EC2 모듈에서 EC2 보안 그룹 ID 가져오기
   app_sg_id = module.security.sg_id
 
-  # 비밀번호는 tfvars나 환경변수에서 관리 추천
+  lambda_sg_id = module.security.lambda_sg_id
+
+  # 비밀번호는 
   db_password = var.db_password
 }
 
@@ -162,8 +163,14 @@ module "lambda" {
   vpc_id           = module.vpc.vpc_id
   subnet_ids       = module.vpc.private_subnet_ids
 
-  # tfvars에서 ip 값 
+  # tfvars 값 
   redis_host = var.k3s_worker_node_ip
+
+  db_host = var.PostgreSQL_host
+  db_name = var.PostgreSQL_name
+  db_user = var.PostgreSQL_user
+  db_password = var.PostgreSQL_password
+
 }
 
 # s3 모듈 호출

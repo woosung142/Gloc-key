@@ -20,9 +20,9 @@ public class S3Service {
     private String bucketName;
 
     // 다운로드용 pre-signed URL 생성
-    public String createPresignedGetUrl(String username, String jobId) {
+    public String createPresignedGetUrl(String s3Key) {
 
-        String s3Key = String.format("generated-images/%s/%s", username, jobId);
+//        String s3Key = String.format("generated-images/%s/%s", username, jobId);
 
         GetObjectRequest objectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
