@@ -6,7 +6,7 @@ images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
     newTag: ccid-3b3936f
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
-    newTag: ccid-021f097
+    newTag: ccid-123456
 patches:
   - target:
       kind: Deployment
