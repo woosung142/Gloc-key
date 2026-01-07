@@ -4,7 +4,9 @@ resources:
   - ../../base
 images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
-    newTag: ccid-ff54311
+    newTag: ccid-217da6e
+  - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
+    newTag: ccid-171a99f
 patches:
   - target:
       kind: Deployment

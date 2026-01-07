@@ -4,9 +4,9 @@ resources:
 # backend
   - backend/backend-deployment.yaml
   - backend/backend-service.yaml
-# # frontend
-#   - frontend/frontend-deployment.yaml
-#   - frontend/frontend-service.yaml
+# frontend
+  - frontend/frontend-deployment.yaml
+  - frontend/frontend-service.yaml
 # redis
   - redis/redis-statefulset.yaml
   - redis/redis-service.yaml
