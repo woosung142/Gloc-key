@@ -17,3 +17,22 @@ output "cicd_secret_key" {
   sensitive   = true
 }
 
+# worker 인스턴스용 프로파일 출력 추가
+output "worker_profile_name" {
+  value = aws_iam_instance_profile.worker_profile.name
+}
+
+output "sagemaker_role_arn" {
+  description = "SageMaker ARN 주소 정보"
+  value       = aws_iam_role.sagemaker_role.arn
+}
+
+output "lambda_role_arn" {
+  description = "lambda ARN 주소 정보"
+  value       = aws_iam_role.iam_for_lambda.arn
+}
+
+output "lambda_sg_id" {
+  description = "lambda 보안 그룹 ID"
+  value = aws_security_group.lambda_sg.id
+}

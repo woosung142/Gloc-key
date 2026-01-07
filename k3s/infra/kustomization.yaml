@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+# cert-manager
+  - certs/issuer.yaml
+  - certs/certificate.yaml
+# networking
+  - networking/argocd-route.yaml
+  - networking/tls-store.yaml
+  - networking/traefik-dashboard.yaml
+  - networking/monitoring-route.yaml
+  - networking/ingress.yaml
+# ecr helper
+  - ecr-helper/ecr-cronjob.yaml
+# node reaper
+  - node-reaper/node-cronjob.yaml
+# storage
+  - storage/local-path-provisioner-default.yaml
+  - storage/local-path-config-default.yaml
+
+# storage
+patches:
+  - path: storage/helper-patch.yaml
+    target:
+      kind: ConfigMap
+      name: local-path-config
+      namespace: kube-system

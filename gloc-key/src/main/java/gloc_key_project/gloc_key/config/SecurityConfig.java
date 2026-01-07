@@ -1,15 +1,16 @@
 package gloc_key_project.gloc_key.config;
 
-import gloc_key_project.gloc_key.entity.RefreshToken;
+//import gloc_key_project.gloc_key.entity.RefreshToken;
 import gloc_key_project.gloc_key.jwt.JWTFilter;
 import gloc_key_project.gloc_key.jwt.JWTUtil;
 import gloc_key_project.gloc_key.jwt.LoginFilter;
-import gloc_key_project.gloc_key.repository.RefreshTokenRepository;
+//import gloc_key_project.gloc_key.repository.RefreshTokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,6 +23,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Collections;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -31,8 +33,8 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
-    private final RefreshTokenRepository refreshTokenRepository;
-
+//    private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisTemplate<String, String> redisTemplate;
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
@@ -46,29 +48,47 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenRepository);
+//        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenRepository);
+        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisTemplate);
         loginFilter.setFilterProcessesUrl("/api/login");
         http
                 //cors 설정
-                .cors((corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
+                .cors(corsCustomizer -> corsCustomizer.configurationSource(new CorsConfigurationSource() {
                     @Override
-                    public @Nullable CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+                    public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
+
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        //허용할
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:3000"));
-                        //허용할 메서드
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
-                        configuration.setAllowCredentials(true);
-                        //허용할 헤더
-                        configuration.setAllowedHeaders(Collections.singletonList("*"));
-                        configuration.setMaxAge(3600L);
-                        //Authorization 헤더 허용
-                        configuration.setExposedHeaders(Collections.singletonList("Authorization"));
+                        // 허용 Origin
+                        configuration.setAllowedOrigins(List.of(
+                                "http://localhost:5173",
+                                "https://www.glok.store"
+                        ));
 
+                        // 허용 메서드
+                        configuration.setAllowedMethods(List.of(
+                                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                        ));
+
+                        // 쿠키 허용 (refreshToken)
+                        configuration.setAllowCredentials(true);
+
+                        // 프론트 → 서버 요청 시 허용 헤더
+                        configuration.setAllowedHeaders(List.of(
+                                "Content-Type",
+                                "access"
+                        ));
+
+                        // 서버 → 프론트 노출 헤더
+                        configuration.setExposedHeaders(List.of(
+                                "access"
+                        ));
+
+                        configuration.setMaxAge(3600L);
                         return configuration;
                     }
-                })))
+                }))
+
 
                 //csrf 비활성화
                 .csrf((auth) -> auth.disable())

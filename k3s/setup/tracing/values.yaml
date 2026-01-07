@@ -1,0 +1,40 @@
+nodeSelector:
+  role: worker
+
+tempo:
+  storage:
+    trace:
+      backend: local
+      local:
+        path: /var/tempo/traces
+      wal:
+        path: /var/tempo/wal
+
+  retention: 1h
+
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+persistence:
+  enabled: false
+
+statefulSet:
+  enabled: true
+
+securityContext:
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+  runAsNonRoot: true
+
+extraVolumes:
+  - name: storage
+    emptyDir: {}
+extraVolumeMounts:
+  - name: storage
+    mountPath: /var/tempo

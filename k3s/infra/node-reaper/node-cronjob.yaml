@@ -1,0 +1,61 @@
+apiVersion: v1  # 봇 생성
+kind: ServiceAccount
+metadata:
+  name: node-reaper
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1 # 노드에 접근할 수 있는 ClusterRole 생성
+kind: ClusterRole
+metadata:
+  name: node-reaper-role
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get", "list", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1 # service account에 ClusterRole을 바인딩
+kind: ClusterRoleBinding
+metadata:
+  name: node-reaper-binding
+subjects:
+  - kind: ServiceAccount
+    name: node-reaper
+    namespace: kube-system
+roleRef:
+  kind: ClusterRole
+  name: node-reaper-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: node-reaper
+  namespace: kube-system
+spec:
+  schedule: "*/1 * * * *" # 1분마다 실행
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: node-reaper
+
+          nodeSelector:
+            role: worker
+
+          containers:
+          - name: reaper
+            image: alpine/k8s:1.28.3
+            command:
+            - /bin/sh
+            - -c
+            - |
+              TARGET_NODES=$(kubectl get nodes --no-headers | grep "gloc-key-worker-i-" | grep "NotReady" | awk '{print $1}')
+              
+              if [ -z "$TARGET_NODES" ]; then
+                echo "삭제할게 없음"
+              else
+                echo "죽은 스팟 인스턴스 발견: $TARGET_NODES"
+                echo "$TARGET_NODES" | xargs -r kubectl delete node
+                echo "청소 완료."
+              fi
+          restartPolicy: OnFailure

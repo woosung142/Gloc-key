@@ -1,0 +1,15 @@
+fullnameOverride: "sealed-secrets-controller"
+
+nodeSelector:
+  role: worker
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    memory: 256Mi
+
+metrics:
+  serviceMonitor:
+    enabled: false

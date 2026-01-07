@@ -1,3 +1,7 @@
+global:
+  nodeSelector:
+    role: worker
+    
 controller:
   replicas: 1
   resources:
@@ -5,7 +9,7 @@ controller:
       cpu: 100m #10m
       memory: 250Mi
     limits:
-      cpu: 300m #30m
+      #cpu: 300m #30m
       memory: 512Mi
 
 server:
@@ -16,10 +20,9 @@ server:
     enabled: false
   resources:
     requests:
-      cpu: 3m
+      cpu: 50m
       memory: 40Mi
     limits:
-      cpu: 9m
       memory: 80Mi
 
 repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
@@ -29,7 +32,7 @@ repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
       cpu: 50m #2m
       memory: 120Mi #40Mi
     limits:
-      cpu: 200m #6m
+      #cpu: 200m #6m
       memory: 360Mi #120Mi
 
 applicationSet:

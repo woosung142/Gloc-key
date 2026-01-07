@@ -1,0 +1,68 @@
+apiVersion: v1 # 봇 생성
+kind: ServiceAccount
+metadata:
+  name: ecr-token-helper
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1 # secret 리소스에 접근할 수 있는 Role 생성
+kind: Role
+metadata:
+  name: ecr-token-helper-role
+  namespace: default
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "create", "delete", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1 # service account에 role을 바인딩
+kind: RoleBinding
+metadata:
+  name: ecr-token-helper-binding
+  namespace: default
+subjects:
+  - kind: ServiceAccount
+    name: ecr-token-helper
+    namespace: default
+roleRef:
+  kind: Role
+  name: ecr-token-helper-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1 # 10시간 마다 ECR 토큰을 갱신하는 CronJob 생성
+kind: CronJob
+metadata:
+  name: ecr-token-refresher
+  namespace: default
+spec:
+  schedule: "0 */10 * * *"
+  successfulJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: ecr-token-helper
+
+          nodeSelector:
+            role: worker
+
+          containers:
+            - name: ecr-token-refresher
+              image: amazon/aws-cli:latest
+              command:
+                - /bin/sh
+                - -c
+                - |-
+                  curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+                  chmod +x kubectl
+                  mv kubectl /usr/local/bin/
+
+                  TOKEN=$(aws ecr get-login-password --region ap-northeast-2)
+                  kubectl delete secret ecr-secret --ignore-not-found
+                  kubectl create secret docker-registry ecr-secret \
+                    --docker-server=123644281329.dkr.ecr.ap-northeast-2.amazonaws.com \
+                    --docker-username=AWS \
+                    --docker-password=$TOKEN
+              env:
+                - name: AWS_REGION
+                  value: ap-northeast-2
+          restartPolicy: Never
