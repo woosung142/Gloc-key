@@ -14,9 +14,8 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/woosung142/k-animator/frontend:main
-          imagePullPolicy: Always
+          image: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
           ports:
             - containerPort: 80
       imagePullSecrets:
-        - name: ghcr-secret
+        - name: ecr-secret

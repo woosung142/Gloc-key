@@ -2,7 +2,7 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-ARG VITE_API_BASE_URL
+ARG VITE_API_BASE_URL="https://www.glok.store/api"
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # Install dependencies
