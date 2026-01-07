@@ -13,6 +13,10 @@ variable "lambda_sg_id" {
   type        = string
 }
 
+variable "bucket_name" {
+  description = "S3 버킷명"
+  type        = string
+}
 # variable "lambda_function_name" {
 #   description = "람다 함수 이름"
 #   type        = string
