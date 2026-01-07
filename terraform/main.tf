@@ -17,6 +17,7 @@ module "security" {
 
   # lambda_function_name = module.lambda.lambda_name
   # s3_arn = module.s3.s3_arn
+  bucket_name = module.s3.bucket_name
 
   admin_ip = "1.241.176.242/32"
 

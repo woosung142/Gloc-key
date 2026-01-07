@@ -207,6 +207,7 @@ resource "aws_iam_role_policy_attachment" "sagemaker_ecr_readonly" {
   role       = aws_iam_role.sagemaker_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
+
 # worker 인스턴스용 IAM 역할 및 정책 생성
 resource "aws_iam_role" "worker_role" {
   name        = "${var.project_name}-worker-role"
@@ -223,6 +224,35 @@ resource "aws_iam_role" "worker_role" {
       }
     ]
   })
+}
+
+# worker에서 S3 접근을 위한 정책 생성
+resource "aws_iam_policy" "worker_s3_access" {
+  name        = "${var.project_name}-worker-s3-access"
+  description = "Policy for generating pre-signed URLs and accessing S3"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject",   # pre-signed URL로 읽기 권한을 줄 때 필요
+          "s3:PutObject",   # 이미지를 업로드해야 한다면 필요
+          "s3:ListBucket"   # 버킷 내부 확인용
+        ]
+        Resource = [
+          "arn:aws:s3:::${var.bucket_name}",
+          "arn:aws:s3:::${var.bucket_name}/*"
+        ]
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "worker_s3_attach" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.worker_s3_access.arn
 }
 
 #ssm 파라미터 스토어 접근 권한 부여
