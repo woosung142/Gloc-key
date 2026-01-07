@@ -17,3 +17,8 @@ export const signup = async (username, password) => {
   const response = await api.post("/signup", formData);
   return response;
 };
+
+export const logoutAPI = async () => {
+  const response = await api.delete("/logout");
+  return response;
+};
