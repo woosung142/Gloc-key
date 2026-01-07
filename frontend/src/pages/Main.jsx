@@ -1,9 +1,12 @@
 import { useState, useEffect } from "react";
 import { logoutAPI } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
+import { useNavigate } from "react-router-dom";
 import { generateImageProcess, getImageResult } from "../api/image";
 
 export default function Main() {
+  const navigate = useNavigate();
+
   // Zustand store에서 로그아웃 함수 가져오기
   const logout = useAuthStore((state) => state.logout);
 
@@ -137,8 +140,8 @@ export default function Main() {
           />
         </div>
       )}
+      <button onClick={() => navigate("/history")}>생성 내역 보기</button>
 
-      {/* 로그아웃 버튼 */}
       <button onClick={handleLogout}>로그아웃</button>
     </div>
   );

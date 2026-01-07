@@ -11,7 +11,6 @@ export default function Signup() {
   const handleSignup = async () => {
     try {
       setError("");
-      // FormData 형식으로 전송 (백엔드 AuthController.signupProcess 규격에 맞춤)
       await signup(username, password);
       
       alert("회원가입이 완료되었습니다. 로그인해주세요.");
