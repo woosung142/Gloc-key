@@ -47,6 +47,8 @@ export default function Login() {
       <br />
       <button onClick={handleLogin}>로그인</button>
       {error && <p style={{ color: "red" }}>{error}</p>}
+
+      <button onClick={() => navigate("/signup")}>회원가입</button>
     </div>
   );
 }
