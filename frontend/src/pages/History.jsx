@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getImageHistory } from "../api/image";
+import { downloadImage } from "../utils/download";
 
 export default function History() {
   const [history, setHistory] = useState([]);
@@ -39,6 +40,7 @@ export default function History() {
               {(
                 <img src={item.imageUrl} alt="generated" style={{ width: "100%" }} />
               )}
+              <button onClick={() => downloadImage(item.imageUrl)}>다운로드</button>
               <p><small>생성일: {new Date(item.createdAt).toLocaleString()}</small></p>
             </div>
           ))}
