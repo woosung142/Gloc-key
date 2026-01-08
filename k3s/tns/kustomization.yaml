@@ -1,0 +1,22 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+# resources:
+#   - app-dep.yaml
+#   - app-svc.yaml
+#   - db-dep.yaml
+#   - db-svc.yaml
+#   - loadgen-dep.yaml
+#   - loadgen-svc.yaml
+# patches:
+#   - target:
+#       kind: Deployment
+#     patch: |-
+#       apiVersion: apps/v1
+#       kind: Deployment
+#       metadata:
+#         name: all
+#       spec:
+#         template:
+#           spec:
+#             nodeSelector:
+#               role: worker

@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - ccid  # 테스트용 브랜치
+      - develop  # 테스트용 브랜치
 
 # 권한 설정 (Git Push를 위해 필요)
 permissions:
@@ -77,7 +77,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Update Kustomize Manifest
-        if: github.ref_name == 'main' || github.ref_name == 'ccid'
+        if: github.ref_name == 'main' || github.ref_name == 'develop'
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
