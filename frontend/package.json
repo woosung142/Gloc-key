@@ -12,9 +12,12 @@
   "dependencies": {
     "@tanstack/react-query": "^5.90.16",
     "axios": "^1.13.2",
+    "konva": "^10.0.12",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-konva": "^19.2.1",
     "react-router-dom": "^7.11.0",
+    "use-image": "^1.1.4",
     "zustand": "^5.0.9"
   },
   "devDependencies": {

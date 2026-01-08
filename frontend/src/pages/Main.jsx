@@ -3,6 +3,7 @@ import { logoutAPI } from "../api/auth";
 import { useAuthStore } from "../store/authStore";
 import { useNavigate } from "react-router-dom";
 import { generateImageProcess, getImageResult } from "../api/image";
+import { downloadImage } from "../utils/download";
 
 export default function Main() {
   const navigate = useNavigate();
@@ -58,6 +59,11 @@ export default function Main() {
     logout(); // Zustand 상태 초기화 및 토큰 삭제
     navigate("/login");
   }
+};
+
+const handleEditClick = () => {
+  // 생성된 이미지 URL을 state에 담아 /edit 페이지로 이동
+  navigate('/edit', { state: { imageUrl: imageUrl } });
 };
 
   /**
@@ -130,7 +136,7 @@ export default function Main() {
       )}
 
       {/* 생성된 이미지 표시 */}
-      {imageUrl && (
+      {/* {imageUrl && (
         <div>
           <h2>생성된 이미지</h2>
           <img
@@ -138,6 +144,35 @@ export default function Main() {
             alt="generated"
             style={{ maxWidth: "100%", height: "auto" }}
           />
+        </div>
+      )} */}
+      {imageUrl && (
+        <div className="flex flex-col items-center gap-4 mt-6">
+          <h2 className="text-xl font-bold">생성된 이미지</h2>
+          <img
+            src={imageUrl}
+            alt="generated"
+            className="rounded-lg shadow-lg"
+            style={{ maxWidth: "100%", height: "auto" }}
+          />
+          
+          <div className="flex gap-4">
+            {/* 편집 페이지로 이동하는 버튼 */}
+            <button 
+              onClick={handleEditClick}
+              className="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 font-bold"
+            >
+              이 이미지 편집하기
+            </button>
+            
+            {/* 기존에 만들었던 다운로드 기능 */}
+            <button 
+              onClick={() => downloadImage(imageUrl)}
+              className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 font-bold"
+            >
+              원본 다운로드
+            </button>
+          </div>
         </div>
       )}
       <button onClick={() => navigate("/history")}>생성 내역 보기</button>

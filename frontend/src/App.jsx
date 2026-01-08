@@ -3,7 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Main from "./pages/Main";
-import History from "./pages/History"; // History 컴포넌트 임포트 확인
+import History from "./pages/History"; 
+import EditPage from './pages/EditPage';
 import PrivateRoute from "./components/PrivateRoute";
 import { useAuthStore } from "./store/authStore";
 
@@ -30,6 +31,7 @@ function App() {
         <Route element={<PrivateRoute />}>
           <Route path="/" element={<Main />} />
           <Route path="/history" element={<History />} />
+          <Route path="/edit" element={<EditPage />}/>
         </Route>
       </Routes>
     </BrowserRouter>
