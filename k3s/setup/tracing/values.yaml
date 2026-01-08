@@ -346,7 +346,7 @@ extraVolumes: []
 
 # -- Node labels for pod assignment. See: https://kubernetes.io/docs/user-guide/node-selection/
 nodeSelector:
-  role: worker
+  role: worker2
 
 # -- Tolerations for pod assignment. See: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
 tolerations: []
