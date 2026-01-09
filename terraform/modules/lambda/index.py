@@ -96,21 +96,31 @@ def lambda_handler(event, context):
                 insert_query = """
                     INSERT INTO image (jobid, user_id, prompt, s3key, createdat)
                     VALUES (%s, %s, %s, %s, %s)
+                    RETURNING id
                 """
                 cur.execute(insert_query, (
-                    job_id, 
-                    user_id, 
-                    task_info.get("prompt", ""), 
-                    s3_key, 
+                    job_id,
+                    user_id,
+                    task_info.get("prompt", ""),
+                    s3_key,
                     datetime.now()
                 ))
-                
+
+                image_id = cur.fetchone()[0]  # imageId 획득
                 # DB 커밋
                 conn.commit()
-                print(f"🐘 RDS(PostgreSQL) 저장 완료: jobId={job_id}")
+                
+                print(f"🐘 RDS 저장 완료: jobId={job_id}, imageId={image_id}")
 
             # 3️⃣ Redis 상태 업데이트 (DB 저장이 성공했을 때만 수행)
-            update_status(job_key, "COMPLETED", {"s3Key": s3_key})
+            update_status(
+                job_key,
+                "COMPLETED",
+                {
+                    "s3Key": s3_key,
+                    "imageId": image_id
+                }
+            )
             print(f"🎉 이미지 생성 워크플로우 완료: {job_id}")
 
         return {"statusCode": 200}

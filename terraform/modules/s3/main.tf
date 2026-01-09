@@ -18,6 +18,27 @@ resource "aws_s3_bucket_public_access_block" "image_bucket_block" {
   restrict_public_buckets = true
 }
 
+# S3 CORS 설정
+resource "aws_s3_bucket_cors_configuration" "image_bucket_cors" {
+  bucket = aws_s3_bucket.image_bucket.id
+
+  cors_rule {
+    allowed_headers = ["*"]
+    allowed_methods = [
+      "GET",
+      "HEAD"
+    ]
+    allowed_origins = [
+      "http://localhost:5173",
+      "https://www.glok.store"
+    ]
+    expose_headers  = ["ETag"]
+    max_age_seconds = 3000
+  }
+}
+
+
+
 # S3 서비스가 이 람다 함수를 호출할 수 있도록 허락하는 설정
 resource "aws_lambda_permission" "allow_s3_bucket" {
   statement_id  = "AllowExecutionFromS3Bucket"
