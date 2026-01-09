@@ -55,11 +55,12 @@ public class ImageService {
 
         String status = (String) taskInfo.get("status");
         String imageUrl = null;
-
+        Long imageId = null;
 
         // 생성 완료 시 S3 보안 접근을 위한 Presigned URL 발급
         if ("COMPLETED".equals(status)) {
             String s3Key = (String) taskInfo.get("s3Key");
+            imageId =  Long.valueOf((String) taskInfo.get("imageId"));
 
             if (s3Key == null) {
                 throw new IllegalStateException("이미지 경로 정보가 존재하지 않습니다.");
@@ -67,7 +68,7 @@ public class ImageService {
 
             imageUrl = s3Service.createPresignedGetUrl(s3Key);
         }
-        return new ImageStatusResponse(jobId, status, imageUrl);
+        return new ImageStatusResponse(imageId, jobId, status, imageUrl);
     }
 
     // 3. 기존 프롬프트를 재사용한 이미지 재생성

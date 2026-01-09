@@ -38,6 +38,18 @@ public class ImageController {
         return ResponseEntity.ok(response);
     }
 
+    // 편집 이미지 저장용 URL 요청 API (Pre-signed URL 전달)
+//    @GetMapping("/upload-url")
+//    public ResponseEntity<?> getUploadUrl(
+//            @PathVariable String oldJobId,
+//            @AuthenticationPrincipal CustomUserDetails userDetails) {
+//
+//        // 새로운 jobId를 발급받으며 재생성 프로세스 시작
+//        ImageGenerateResponse response = imageService.getUploadUrl(oldJobId, userDetails.getId(), userDetails.getUsername());
+//
+//        return ResponseEntity.ok(response);
+//    }
+
     // 이미지 재생성 API
     @PostMapping("/re-generate/{oldJobId}")
     public ResponseEntity<ImageGenerateResponse> generateImageProcess(

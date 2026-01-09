@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImageStatusResponse {
+    private Long imageId;
     private String jobId;
     private String status;
     private String imageUrl;
