@@ -17,6 +17,24 @@ spec:
           image: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
           ports:
             - containerPort: 8080
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/agent/opentelemetry-javaagent.jar"
+
+            - name: OTEL_SERVICE_NAME
+              value: "backend-service"
+
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://tempo.tracing.svc.cluster.local:4317"
+
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+
+            - name: OTEL_METRICS_EXPORTER
+              value: "none"
+
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              value: "true"
 
           volumeMounts:
             - name: config-volume           
@@ -39,25 +57,6 @@ spec:
           volumeMounts:
             - name: agent-volume
               mountPath: /agent
-
-          env:
-            - name: JAVA_TOOL_OPTIONS
-              value: "-javaagent:/agent/opentelemetry-javaagent.jar"
-
-            - name: OTEL_SERVICE_NAME
-              value: "backend-service"
-
-            - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://tempo.tracing.svc.cluster.local:4317"
-
-            - name: OTEL_TRACES_EXPORTER
-              value: "otlp"
-
-            - name: OTEL_METRICS_EXPORTER
-              value: "none"
-
-            - name: OTEL_EXPORTER_OTLP_INSECURE
-              value: "true"
 
       imagePullSecrets:
         - name: ecr-secret
