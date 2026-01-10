@@ -6,7 +6,7 @@ images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
     newTag: develop-9b12e0a
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
-    newTag: develop-9b12e0a
+    newTag: develop-4c361c4
 patches:
   - target:
       kind: Deployment
