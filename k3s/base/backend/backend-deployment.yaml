@@ -21,6 +21,9 @@ spec:
             - name: JAVA_TOOL_OPTIONS
               value: "-javaagent:/agent/opentelemetry-javaagent.jar"
 
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+
             - name: OTEL_SERVICE_NAME
               value: "backend-service"
 
