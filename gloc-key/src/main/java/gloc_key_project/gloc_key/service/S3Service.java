@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
@@ -45,9 +47,9 @@ public class S3Service {
     }
 
     // 업로드용 pre-signed URL 생성
-    public String createPresignedPutUrl(String username, String jobId) {
+    public String createPresignedPutUrl(String s3Key) {
 
-        String s3Key = String.format("generated-images/%s/%s", username, jobId);
+//        String s3Key = String.format("generated-images/%s/edits/%s.png", username, jobId);
 
         PutObjectRequest objectRequest = PutObjectRequest.builder()
                 .bucket(bucketName)
@@ -63,5 +65,19 @@ public class S3Service {
         PresignedPutObjectRequest presignedRequest = s3Presigner.presignPutObject(presignRequest);
 
         return presignedRequest.url().toExternalForm();
+    }
+
+    public boolean existsObject(String s3Key) {
+        try {
+            s3Client.headObject(
+                    HeadObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(s3Key)
+                            .build()
+            );
+            return true;
+        } catch (NoSuchKeyException e) {
+            return false;
+        }
     }
 }
