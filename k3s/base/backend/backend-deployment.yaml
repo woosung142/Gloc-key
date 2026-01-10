@@ -27,6 +27,9 @@ spec:
             - name: OTEL_INSTRUMENTATION_HTTP_SERVER_ROUTE_EXCLUSION_REGEX
               value: "/actuator/.*|/health|/ready|/live"
 
+            - name: OTEL_INSTRUMENTATION_HIKARICP_ENABLED
+              value: "false"
+
             - name: OTEL_SERVICE_NAME
               value: "backend-service"
 
