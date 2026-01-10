@@ -4,7 +4,7 @@ resources:
   - ../../base
 images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
-    newTag: develop-4dfda16
+    newTag: develop-9b12e0a
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
     newTag: develop-4dfda16
 patches:
