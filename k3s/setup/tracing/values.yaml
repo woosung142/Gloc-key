@@ -35,13 +35,13 @@ tempo:
   updateStrategy: RollingUpdate
   resources:
    requests:
-     cpu: 100m
-     memory: 512Mi
+     cpu: 30m
+     memory: 256Mi
    limits:
     #  cpu: 2000m
-     memory: 1Gi
+     memory: 512Mi
 
-  memBallastSizeMbs: 512
+  memBallastSizeMbs: 128
   multitenancyEnabled: false
   # -- If true, Tempo will report anonymous usage data about the shape of a deployment to Grafana Labs
   reportingEnabled: true
@@ -56,7 +56,7 @@ tempo:
       ring:
         replication_factor: 1
     trace_idle_period: 10s # wal로 넘어가는 시간
-    max_block_bytes: 268435456 # 256MB
+    max_block_bytes: 134217728 # 128MB
     max_block_duration: 15m
     complete_block_timeout: 15m
     flush_all_on_shutdown: true
