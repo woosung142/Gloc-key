@@ -24,6 +24,9 @@ spec:
             - name: OTEL_EXPORTER_OTLP_PROTOCOL
               value: "grpc"
 
+            - name: OTEL_INSTRUMENTATION_HTTP_SERVER_ROUTE_EXCLUSION_REGEX
+              value: "/actuator/.*|/health|/ready|/live"
+
             - name: OTEL_SERVICE_NAME
               value: "backend-service"
 
