@@ -361,3 +361,36 @@ resource "aws_security_group" "lambda_sg" {
 
   tags = { Name = "gloc-key-lambda-sg" }
 }
+
+# Tempo S3 버킷 접근 정책 생성 (worker)
+resource "aws_iam_policy" "tempo_s3_policy" {
+  name        = "${var.tempo_bucket_name}-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = var.tempo_bucket_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "${var.tempo_bucket_arn}/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "tempo_attach" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.tempo_s3_policy.arn
+}
