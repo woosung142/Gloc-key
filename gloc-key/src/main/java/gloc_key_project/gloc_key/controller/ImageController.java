@@ -9,6 +9,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/images")
@@ -68,4 +70,16 @@ public class ImageController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/history/{imageId}/edits")
+    public ResponseEntity<List<EditImageHistoryResponse>> getHistoryEdits(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<EditImageHistoryResponse> response =
+                imageService.getEditedImages(imageId, userDetails.getId());
+
+        return ResponseEntity.ok(response);
+    }
+
 }

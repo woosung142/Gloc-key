@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ImageHistoryResponse {
-
+    private Long imageId;
     private String jobId;      // 작업 ID
     private String prompt;     // 생성에 사용된 프롬프트
     private String imageUrl;   // S3 Presigned URL
