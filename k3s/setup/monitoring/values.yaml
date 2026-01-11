@@ -45,6 +45,8 @@ prometheus-node-exporter: # 마스터 노드에도 배포
 
 prometheus:
   prometheusSpec:
+    enableFeatures:
+      - remote-write-receiver
     enableRemoteWriteReceiver: true
     nodeSelector:
       role: worker
