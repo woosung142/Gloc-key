@@ -8,6 +8,18 @@ export default function History() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  const [imageUrl, setImageUrl] = useState(null);
+  const [imageId, setImageId] = useState(null);
+
+  const handleEditClick = (imageId, imageUrl) => {
+    // 생성된 이미지 URL을 state에 담아 /edit 페이지로 이동
+    navigate('/edit', { 
+      state: { 
+        imageUrl: imageUrl,
+        imageId: imageId 
+      } });
+  };
+
   useEffect(() => {
     const fetchHistory = async () => {
       try {
@@ -41,6 +53,7 @@ export default function History() {
                 <img src={item.imageUrl} alt="generated" style={{ width: "100%" }} />
               )}
               <button onClick={() => downloadImage(item.imageUrl)}>다운로드</button>
+              <button onClick={() => handleEditClick(item.imageId, item.imageUrl)}>이 이미지 편집하기</button>
               <p><small>생성일: {new Date(item.createdAt).toLocaleString()}</small></p>
             </div>
           ))}
