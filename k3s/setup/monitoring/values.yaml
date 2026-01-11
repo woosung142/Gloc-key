@@ -96,6 +96,14 @@ grafana:
       url: http://kube-prometheus-stack-alertmanager.monitoring:9093
       jsonData:
         implementation: prometheus
+    - name: Tempo
+      type: tempo
+      uid: tempo
+      access: proxy
+      url: http://tempo.tracing:3200
+      jsonData:
+        serviceGraph:
+          datasourceUid: "prometheus"
   resources: # (3.30m / 141) cpu/memory -> 메모리 변경 폭이 큼
     requests:
       cpu: 10m  #수정
