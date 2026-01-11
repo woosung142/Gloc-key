@@ -17,6 +17,11 @@ export const getImageHistory = async (page = 0, size = 10) => {
   return data;
 };
 
+export const getEditImageHistory = async (rootImageId) => {
+  const { data } = await api.get(`/images/history/${rootImageId}/edits`);
+  return data;
+};
+
 
 export const getUploadUrl = async (rootImageId) => {
   console.log(rootImageId)
