@@ -10,7 +10,7 @@ controller:
       memory: 250Mi
     limits:
       #cpu: 300m #30m
-      memory: 512Mi
+      memory: 1Gi
 
 server:
   replicas: 1
