@@ -105,7 +105,7 @@ grafana:
       url: http://tempo.tracing:3200
       jsonData:
         serviceGraph:
-          datasourceUid: "prometheus"
+          datasourceUid: prometheus
   resources: # (3.30m / 141) cpu/memory -> 메모리 변경 폭이 큼
     requests:
       cpu: 10m  #수정
