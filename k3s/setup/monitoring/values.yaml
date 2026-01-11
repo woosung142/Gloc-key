@@ -100,13 +100,15 @@ grafana:
         implementation: prometheus
     - name: Tempo
       type: tempo
-      uid: tempo
+      uid: tempo-v2
       access: proxy
       url: http://tempo.tracing:3200
       jsonData:
         serviceGraph:
           enabled: true
           datasourceUid: prometheus
+        nodeGraph:
+          enabled: true
   resources: # (3.30m / 141) cpu/memory -> 메모리 변경 폭이 큼
     requests:
       cpu: 10m  #수정
