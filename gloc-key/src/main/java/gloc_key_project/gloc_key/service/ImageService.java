@@ -1,5 +1,6 @@
 package gloc_key_project.gloc_key.service;
 
+import gloc_key_project.gloc_key.dto.EditImageHistoryResponse;
 import gloc_key_project.gloc_key.dto.ImageGenerateResponse;
 import gloc_key_project.gloc_key.dto.ImageHistoryResponse;
 import gloc_key_project.gloc_key.dto.ImageStatusResponse;
@@ -14,6 +15,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -27,7 +29,7 @@ public class ImageService {
     private final S3Service s3Service;
     private final RedisTemplate<String, String> redisTemplate;
 
-    // 1. 이미지 생성 프로세스
+    // 이미지 생성 프로세스
     public ImageGenerateResponse generateImageProcess(String prompt, String username) {
         // 비동기 작업 추적을 위해 Redis에 초기 상태 저장
         String jobId = saveTaskToRedis(username, prompt);
@@ -38,7 +40,7 @@ public class ImageService {
         return new ImageGenerateResponse(jobId, "이미지 생성이 시작되었습니다.");
     }
 
-    // 2. 이미지 생성 상태 및 결과 조회 (Polling용 API)
+    // 이미지 생성 상태 및 결과 조회 (Polling용 API)
     public ImageStatusResponse checkImageStatus(String username, String jobId) {
         // Redis Hash 작업 메타데이터 일괄 조회
         Map<Object, Object> taskInfo = redisTemplate.opsForHash().entries("image:job:" + jobId);
@@ -55,11 +57,12 @@ public class ImageService {
 
         String status = (String) taskInfo.get("status");
         String imageUrl = null;
-
+        Long imageId = null;
 
         // 생성 완료 시 S3 보안 접근을 위한 Presigned URL 발급
         if ("COMPLETED".equals(status)) {
             String s3Key = (String) taskInfo.get("s3Key");
+            imageId =  Long.valueOf((String) taskInfo.get("imageId"));
 
             if (s3Key == null) {
                 throw new IllegalStateException("이미지 경로 정보가 존재하지 않습니다.");
@@ -67,10 +70,10 @@ public class ImageService {
 
             imageUrl = s3Service.createPresignedGetUrl(s3Key);
         }
-        return new ImageStatusResponse(jobId, status, imageUrl);
+        return new ImageStatusResponse(imageId, jobId, status, imageUrl);
     }
 
-    // 3. 기존 프롬프트를 재사용한 이미지 재생성
+    // 기존 프롬프트를 재사용한 이미지 재생성
     public ImageGenerateResponse reGenerateImageProcess(String oldJobId, Long userId, String username) {
         // 기존 작업의 설정(프롬프트)을 조회 (Redis 캐시 우선, RDS 백업)
         String oldPrompt = getPromptFromRedisOrDb(oldJobId, userId, username);
@@ -84,19 +87,47 @@ public class ImageService {
         return new ImageGenerateResponse(newJobId, "이미지 재생성을 시작합니다.");
     }
 
+    // 원본 이미지 생성 내역 조회
     public Page<ImageHistoryResponse> getImageHistory(Long userId, int page, int size) {
 
         // created_at 필드 기준 내림차순
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
         // 페이징 조회
-        Page<Image> imagePage = imageRepository.findAllByUser_Id(userId, pageable);
+        Page<Image> imagePage = imageRepository.findByUser_IdAndParentImageIsNull(userId, pageable);
 
         return imagePage.map(image -> ImageHistoryResponse.builder()
+                .imageId(image.getId())
                 .jobId(image.getJobId())
                 .prompt(image.getPrompt())
                 .imageUrl(s3Service.createPresignedGetUrl(image.getS3Key()))
                 .createdAt(image.getCreatedAt())
                 .build());
+
+    }
+    // 편집된 이미지 내역 조회
+    public List<EditImageHistoryResponse> getEditedImages(Long originalImageId, Long userId) {
+
+        // 원본 이미지가 존재하는지 확인
+        Image originalImage =  imageRepository.findById(originalImageId)
+                .orElseThrow(() -> new IllegalArgumentException("원본 이미지가 존재하지 않습니다."));
+
+        // 원본 이미지가 해당 사용자의 이미지가 맞는 지 확인
+        if(!originalImage.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("본인의 작업만 조회할 수 있습니다.");
+        }
+
+        // 원본 이미지로부터 생성된 편집 이미지 조회
+        Long rootImageId = originalImage.getRootImageId();
+        List<Image> images = imageRepository.findByRootImageIdOrderByCreatedAtDesc(rootImageId);
+
+        return images.stream()
+                .filter(image -> image.getParentImage() != null)
+                .map(image -> EditImageHistoryResponse.builder()
+                        .imageId(image.getId())
+                        .imageUrl(s3Service.createPresignedGetUrl(image.getS3Key()))
+                        .createdAt(image.getCreatedAt())
+                        .build())
+                .toList();
 
     }
 
