@@ -26,7 +26,7 @@ const EditPage = () => {
       const dataUrl = canvasRef.current.getCanvasImage();
       
       // 2. 백엔드에서 Pre-signed URL 발급 받기
-      const { uploadUrl, jobId } = await getUploadUrl(imageId);
+      const { uploadUrl, uploadId } = await getUploadUrl(imageId);
       
       // 3. base64를 Blob으로 변환
       const response = await fetch(dataUrl);
@@ -39,7 +39,7 @@ const EditPage = () => {
       });
 
       // 5. 백엔드에 업로드 완료 알림
-      await imageUploadComplete(jobId);
+      await imageUploadComplete(uploadId);
 
       alert("편집된 이미지가 저장되었습니다!");
       navigate('/history'); // 히스토리 페이지로 이동
