@@ -45,6 +45,7 @@ prometheus-node-exporter: # 마스터 노드에도 배포
 
 prometheus:
   prometheusSpec:
+    enableRemoteWriteReceiver: true
     nodeSelector:
       role: worker
     scrapeInterval: "1m" # 스크랩 간격을 1분
