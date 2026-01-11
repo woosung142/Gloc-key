@@ -19,6 +19,7 @@ export default function Main() {
 
   // 최종 이미지 URL 상태
   const [imageUrl, setImageUrl] = useState(null);
+  const [imageId, setImageId] = useState(null);
 
   // 에러 메시지 상태
   const [error, setError] = useState("");
@@ -62,9 +63,14 @@ export default function Main() {
 };
 
 const handleEditClick = () => {
-  // 생성된 이미지 URL을 state에 담아 /edit 페이지로 이동
-  navigate('/edit', { state: { imageUrl: imageUrl } });
-};
+    // 생성된 이미지 URL을 state에 담아 /edit 페이지로 이동
+    navigate('/edit', { 
+      state: { 
+        imageUrl: imageUrl,
+        imageId: imageId 
+      } });
+  };
+
 
   /**
    * jobId 존재 시 이미지 상태 폴링

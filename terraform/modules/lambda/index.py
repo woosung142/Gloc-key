@@ -92,13 +92,12 @@ def lambda_handler(event, context):
                     raise Exception(f"DB에서 사용자를 찾을 수 없습니다: {username}")
                 user_id = user_row[0]
 
-                # Image 테이블에 생성 정보 INSERT
-                insert_query = """
-                    INSERT INTO image (jobid, user_id, prompt, s3key, createdat)
-                    VALUES (%s, %s, %s, %s, %s)
+                # INSERT (root_image_id는 NULL)
+                cur.execute("""
+                    INSERT INTO image (job_id, user_id, prompt, s3_key, root_image_id, created_at)
+                    VALUES (%s, %s, %s, %s, NULL, %s)
                     RETURNING id
-                """
-                cur.execute(insert_query, (
+                """, (
                     job_id,
                     user_id,
                     task_info.get("prompt", ""),
@@ -106,11 +105,16 @@ def lambda_handler(event, context):
                     datetime.now()
                 ))
 
-                image_id = cur.fetchone()[0]  # imageId 획득
-                # DB 커밋
+                image_id = cur.fetchone()[0]  # 생성된 PK
+
+                # 자기 자신을 root_image_id로 UPDATE
+                cur.execute("""
+                    UPDATE image
+                    SET root_image_id = %s
+                    WHERE id = %s
+                """, (image_id, image_id))
+
                 conn.commit()
-                
-                print(f"🐘 RDS 저장 완료: jobId={job_id}, imageId={image_id}")
 
             # 3️⃣ Redis 상태 업데이트 (DB 저장이 성공했을 때만 수행)
             update_status(
