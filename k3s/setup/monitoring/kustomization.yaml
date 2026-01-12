@@ -5,6 +5,7 @@ namespace: monitoring
 resources:
   - dash-node.yaml
   - dash-redis.yaml
+  - dash-tempo.yaml
   
 helmCharts:
   - name: kube-prometheus-stack
