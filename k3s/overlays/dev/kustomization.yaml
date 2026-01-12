@@ -4,9 +4,9 @@ resources:
   - ../../base
 images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
-    newTag: develop-95f7061
+    newTag: develop-37ac998
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
-    newTag: develop-95f7061
+    newTag: develop-37ac998
 patches:
   - target:
       kind: Deployment

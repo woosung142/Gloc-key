@@ -16,3 +16,22 @@ export const getImageHistory = async (page = 0, size = 10) => {
   const { data } = await api.get(`/images/history?page=${page}&size=${size}`);
   return data;
 };
+
+export const getEditImageHistory = async (rootImageId) => {
+  const { data } = await api.get(`/images/history/${rootImageId}/edits`);
+  return data;
+};
+
+
+export const getUploadUrl = async (rootImageId) => {
+  console.log(rootImageId)
+  const { data } = await api.get(`uploads/images/${rootImageId}/edit`);
+  console.log(data);
+  return data;
+};
+
+export const imageUploadComplete = async (jobId) => {
+  const { data } = await api.post(`uploads/images/edit/${jobId}/complete`);
+  console.log(data);
+  return data;
+};

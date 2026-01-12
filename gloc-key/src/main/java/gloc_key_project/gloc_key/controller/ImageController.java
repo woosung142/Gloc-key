@@ -9,6 +9,8 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/images")
@@ -38,6 +40,13 @@ public class ImageController {
         return ResponseEntity.ok(response);
     }
 
+    // 편집 이미지 저장용 URL 요청 API (Pre-signed URL 전달)
+//    @GetMapping("/upload-url")
+//    public ResponseEntity<?> getUploadUrl() {
+//
+//        return ResponseEntity.ok(response);
+//    }
+
     // 이미지 재생성 API
     @PostMapping("/re-generate/{oldJobId}")
     public ResponseEntity<ImageGenerateResponse> generateImageProcess(
@@ -61,4 +70,16 @@ public class ImageController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/history/{imageId}/edits")
+    public ResponseEntity<List<EditImageHistoryResponse>> getHistoryEdits(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        List<EditImageHistoryResponse> response =
+                imageService.getEditedImages(imageId, userDetails.getId());
+
+        return ResponseEntity.ok(response);
+    }
+
 }
