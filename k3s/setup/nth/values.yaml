@@ -7,9 +7,6 @@ extraEnv:
         name: nth-slack-secret
         key: webhook-url
 
-  - name: TZ
-    value: "Asia/Seoul"
-
 webhookTemplate: |
   {
     "text": ":rotating_light: *[AWS Spot Alert] 노드 종료 감지!*",
@@ -19,7 +16,6 @@ webhookTemplate: |
         "fields": [
           { "title": "이벤트 종류", "value": "{{ .Kind }}", "short": true },
           { "title": "대상 노드", "value": "{{ .NodeName }}", "short": true },
-          { "title": "발생 시간", "value": "{{ .Time }}", "short": false },
           { "title": "상태", "value": "파드 Drain", "short": false }
         ]
       }
