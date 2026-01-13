@@ -37,3 +37,8 @@ enableScheduledEventDraining: true
 enableRebalanceMonitoring: false
 enableRebalanceDraining: false
 
+enablePrometheusServer: true
+prometheusServerPort: 9092
+
+serviceMonitor:
+  enabled: true
