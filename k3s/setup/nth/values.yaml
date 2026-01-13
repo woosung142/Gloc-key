@@ -40,12 +40,3 @@ enableRebalanceDraining: false
 enablePrometheusServer: true
 prometheusServerPort: 9092
 
-podMonitor:
-  create: true
-  namespace: kube-system
-  labels: 
-    release: kube-prometheus-stack
-  namespaceSelector:
-    matchNames:
-      - kube-system
-
