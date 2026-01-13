@@ -45,4 +45,7 @@ podMonitor:
   namespace: kube-system
   labels: 
     release: kube-prometheus-stack
+  namespaceSelector:
+    matchNames:
+      - kube-system
 
