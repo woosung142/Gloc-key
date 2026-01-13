@@ -12,3 +12,4 @@ helmCharts:
 
 resources:
   - secrets/sealed-nth.yaml
+  - podmonitor.yaml
