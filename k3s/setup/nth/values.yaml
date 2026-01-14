@@ -1,11 +1,7 @@
 nodeSelector:
   role: worker
-extraEnv:
-  - name: WEBHOOK_URL
-    valueFrom:
-      secretKeyRef:
-        name: nth-slack-secret
-        key: webhook-url
+
+webhookURLSecretName: "nth-slack-secret"
 
 webhookTemplate: |
   {
