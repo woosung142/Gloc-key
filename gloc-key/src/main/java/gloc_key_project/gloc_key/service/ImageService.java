@@ -31,6 +31,11 @@ public class ImageService {
 
     // 이미지 생성 프로세스
     public ImageGenerateResponse generateImageProcess(String prompt, String username) {
+
+        if(prompt == null || prompt.isBlank()) {
+            throw new IllegalArgumentException("프롬프트 작성이 필요합니다.");
+        }
+
         // 비동기 작업 추적을 위해 Redis에 초기 상태 저장
         String jobId = saveTaskToRedis(username, prompt);
 
