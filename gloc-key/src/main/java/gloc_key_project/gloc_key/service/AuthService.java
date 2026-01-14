@@ -33,9 +33,14 @@ public class AuthService {
         String username = signupRequest.getUsername();
         String password = signupRequest.getPassword();
 
+
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            throw new IllegalArgumentException("username 또는 password가 비어있습니다.");
+        }
+
         //id 중복 검증
         if(userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("해당 아이디가 존재합니다.");
         }
 
         User userEntity = User.builder()
@@ -58,12 +63,9 @@ public class AuthService {
 
 
         // 2. refreshToken 만료 검증
-        try {
-            jwtUtil.isExpired(refreshToken);
-        } catch (ExpiredJwtException e) {
+        if (jwtUtil.isExpired(refreshToken)) {
             throw new AuthException("Refresh token is expired");
         }
-
 
         // 3. refreshToken 타입 검증
         if (!"refresh".equals(jwtUtil.getCategory(refreshToken))) {
