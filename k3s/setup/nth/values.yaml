@@ -1,6 +1,13 @@
 nodeSelector:
   role: worker
 
+probes:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
 webhookURLSecretName: "nth-slack-secret"
 
 webhookTemplate: |
@@ -23,6 +30,7 @@ ignoreDaemonSets: true
 # ---------------------------------------------------------------------------------------------------------------------
 # IMDS
 # ---------------------------------------------------------------------------------------------------------------------
+enableProbesServer: true
 daemonsetPriorityClassName: "system-node-critical"
 # 진짜 뺏어갈때만 비운다.
 enableSpotInterruptionDraining: true
