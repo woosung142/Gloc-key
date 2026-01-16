@@ -25,7 +25,7 @@ public class AuthController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @PostMapping("/reissue")
+    @GetMapping("/reissue")
     public ResponseEntity<?> reissueProcess(HttpServletRequest request, HttpServletResponse response) {
 
         String refreshToken = null;

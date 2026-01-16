@@ -24,6 +24,17 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        // 로그인 / 재발급 / 회원가입은 JWT 검사 제외
+        if (path.equals("/api/login")
+                || path.equals("/api/signup")
+                || path.equals("/api/reissue")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String accessToken = request.getHeader("access");
 
         // 토큰 null 검증
