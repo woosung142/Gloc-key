@@ -78,8 +78,12 @@ public class AuthController {
         // 쿠키가 유요한 경로
         cookie.setPath("/");
         // HTTPS 연결에서만 쿠키 전송
-//        cookie.setSecure(true);
+        cookie.setSecure(true);
 
+
+        cookie.setAttribute("SameSite", "None");
+
+        cookie.setDomain(".glok.store");
         // XSS 공격 방지
         cookie.setHttpOnly(true);
         return cookie;
