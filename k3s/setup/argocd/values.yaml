@@ -23,7 +23,7 @@ server:
       cpu: 50m
       memory: 40Mi
     limits:
-      memory: 80Mi
+      memory: 250Mi
 
 repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
   replicas: 1
