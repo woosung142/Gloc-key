@@ -1,0 +1,46 @@
+nodeSelector:
+  role: worker
+
+probes:
+  httpGet:
+    path: /healthz
+    port: 8080
+  initialDelaySeconds: 5
+  periodSeconds: 5
+
+webhookURLSecretName: "nth-slack-secret"
+
+webhookTemplate: |
+  {
+    "text": ":rotating_light: *[AWS Spot Alert] 노드 종료 감지!*",
+    "attachments": [
+      {
+        "color": "danger",
+        "fields": [
+          { "title": "이벤트 종류", "value": "{{ .Kind }}", "short": true },
+          { "title": "대상 노드", "value": "{{ .NodeName }}", "short": true },
+          { "title": "상태", "value": "파드 Drain", "short": false }
+        ]
+      }
+    ]
+  }
+  
+deleteLocalData: true
+ignoreDaemonSets: true
+# ---------------------------------------------------------------------------------------------------------------------
+# IMDS
+# ---------------------------------------------------------------------------------------------------------------------
+enableProbesServer: true
+daemonsetPriorityClassName: "system-node-critical"
+# 진짜 뺏어갈때만 비운다.
+enableSpotInterruptionDraining: true
+# 유지보수때 비운다.
+enableScheduledEventDraining: true
+
+#빈도수가 잦아서 꺼버림
+enableRebalanceMonitoring: false
+enableRebalanceDraining: false
+
+enablePrometheusServer: true
+prometheusServerPort: 9092
+

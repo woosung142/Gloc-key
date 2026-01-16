@@ -34,7 +34,7 @@ spec:
               value: "backend-service"
 
             - name: OTEL_EXPORTER_OTLP_ENDPOINT
-              value: "http://tempo.tracing.svc.cluster.local:4317"
+              value: "http://alloy.collector.svc.cluster.local:4317"
 
             - name: OTEL_TRACES_EXPORTER
               value: "otlp"

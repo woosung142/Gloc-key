@@ -1,0 +1,69 @@
+alloy:
+  configMap:
+    create: true
+    content: |
+      prometheus.exporter.unix "default" {
+        include_exporter_metrics = true
+      }
+
+      prometheus.scrape "node_metrics" {
+        targets = prometheus.exporter.unix.default.targets
+        forward_to = [prometheus.remote_write.metrics_service.receiver]
+        scrape_interval = "15s"
+      }
+
+      prometheus.remote_write "metrics_service" {
+        endpoint {
+          url = "http://kube-prometheus-stack-prometheus.monitoring:9090/api/v1/write"
+        }
+      }
+
+      otelcol.receiver.otlp "default" {
+        grpc { endpoint = "0.0.0.0:4317" }
+        http { endpoint = "0.0.0.0:4318" }
+
+        output {
+          metrics = [otelcol.processor.batch.default.input]
+          traces  = [otelcol.processor.batch.default.input]
+        }
+      }
+      otelcol.processor.batch "default" {
+        output {
+          metrics = [otelcol.exporter.prometheus.metrics_bridge.input]
+          traces  = [otelcol.exporter.otlp.tempo.input]
+        }
+      }
+      otelcol.exporter.prometheus "metrics_bridge" {
+        forward_to = [prometheus.remote_write.metrics_service.receiver]
+      }
+      otelcol.exporter.otlp "tempo" {
+        client {
+          endpoint = "tempo.tracing.svc.cluster.local:4317" 
+          tls {
+            insecure = true
+          }
+        }
+      }
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+controller:
+  type: 'daemonset'
+  tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+service:
+  enabled: true
+  type: ClusterIP
