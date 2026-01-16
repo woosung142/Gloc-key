@@ -1,0 +1,30 @@
+alloy:
+  configMap:
+    create: true
+    content: |
+      prometheus.exporter.unix "default" {
+        include_exporter_metrics = true
+      }
+
+      prometheus.scrape "node_metrics" {
+        targets = prometheus.exporter.unix.default.targets
+        forward_to = [prometheus.remote_write.metrics_service.receiver]
+        scrape_interval = "15s"
+      }
+
+      prometheus.remote_write "metrics_service" {
+        endpoint {
+          url = "http://kube-prometheus-stack-prometheus.monitoring:9090/api/v1/write"
+        }
+      }
+controller:
+  type: 'daemonset'
+  tolerations:
+    - key: "CriticalAddonsOnly"
+      operator: "Exists"
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
