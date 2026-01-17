@@ -1,5 +1,6 @@
 global:
   dnsNamespace: "logging"
+namespaceOverride: "logging"
 deploymentMode: SingleBinary
 
 singleBinary:
