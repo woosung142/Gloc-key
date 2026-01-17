@@ -44,8 +44,8 @@ redis:
       cpu: 6m
       memory: 6Mi
     limits:
-      cpu: 12m
-      memory: 12Mi
+      # cpu: 12m
+      memory: 25Mi
 dex:
   enabled: false  # SSO 비활성화
 notifications:
