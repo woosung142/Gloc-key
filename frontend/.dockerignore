@@ -1,10 +1,6 @@
 node_modules
 dist
-.env
-// .env.*
 .git
-.DS_Store
+.env
+.env.local
 Dockerfile
-docker-compose.yml
-npm-debug.log
-yarn-error.log
