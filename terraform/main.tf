@@ -19,11 +19,13 @@ module "security" {
   # s3_arn = module.s3.s3_arn
   bucket_name = module.s3.bucket_name
   tempo_bucket_name = module.s3.tempo_s3_bucket_name
+  loki_bucket_name = module.s3.loki_s3_bucket_name
 
   admin_ip = "1.241.176.242/32"
 
   lambda_sg_id = module.security.lambda_sg_id
   tempo_bucket_arn = module.s3.tempo_s3_arn
+  loki_bucket_arn = module.s3.loki_s3_arn
 }
 # EC2가 뺏어올 고정 IP(EIP)를 미리 생성 (EC2와 별개로 존재해야 함)
 resource "aws_eip" "k3s_ip" {

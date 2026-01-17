@@ -64,7 +64,7 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
 }
 
 # -------------------------------------------------------------------------------
-# Tempo S3 버킷 (로그 저장용)
+# Tempo S3 버킷 (트레이스 저장용)
 # -------------------------------------------------------------------------------
 resource "aws_s3_bucket" "tempo_bucket" {
   bucket = "gloc-key-tempo-logs-s3-bucket"
@@ -98,6 +98,54 @@ resource "aws_s3_bucket_lifecycle_configuration" "tempo_lifecycle" {
 
     expiration {
       days = 14 
+    }
+  }
+}
+
+# -------------------------------------------------------------------------------
+# Loki S3 버킷 (로그 저장용)
+# -------------------------------------------------------------------------------
+resource "aws_s3_bucket" "loki_bucket" {
+  bucket = "gloc-key-loki-logs-s3-bucket"
+
+  tags = {
+    Name        = "Gloc-key Loki Logs Storage"
+  }
+}
+
+# S3 퍼블릭 액세스 차단 (보안)
+resource "aws_s3_bucket_public_access_block" "loki_bucket_block" {
+  bucket = aws_s3_bucket.loki_bucket.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+
+# 버전 관리 비활성화
+resource "aws_s3_bucket_versioning" "loki_versioning" {
+  bucket = aws_s3_bucket.loki_bucket.id
+  versioning_configuration {
+    status = "Disabled"
+  }
+}
+
+# 수명 주기 규칙 (30일 지나면 삭제)
+resource "aws_s3_bucket_lifecycle_configuration" "loki_lifecycle" {
+  bucket = aws_s3_bucket.loki_bucket.id
+
+  rule {
+    id     = "expire-old-logs"
+    status = "Enabled"
+
+    filter {
+      prefix = ""
+    } 
+
+    expiration {
+      days = 30
     }
   }
 }
