@@ -23,7 +23,16 @@ minio:
   enabled: false
 
 chunksCache:
-  writebackSizeLimit: 10MB
+  enabled: false
+
+resultsCache:
+  enabled: false
+
+test:
+  enabled: false
+
+lokiCanary:
+  enabled: false
 
 loki:
   commonConfig:
@@ -60,6 +69,7 @@ loki:
     retention_enabled: true
     retention_delete_delay: 2h
     retention_delete_worker_count: 150
+    delete_request_store: s3
 
   limits_config:
     retention_period: 720h  # 30 days
