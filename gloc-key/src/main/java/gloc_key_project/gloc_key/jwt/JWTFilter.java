@@ -24,6 +24,17 @@ public class JWTFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        // 로그인 / 재발급 / 회원가입은 JWT 검사 제외
+        if (path.equals("/api/login")
+                || path.equals("/api/signup")
+                || path.equals("/api/reissue")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String accessToken = request.getHeader("access");
 
         // 토큰 null 검증
@@ -34,19 +45,18 @@ public class JWTFilter extends OncePerRequestFilter {
         }
 
         // 토큰 만료 검증
-        try {
-            jwtUtil.isExpired(accessToken);
-        }catch(ExpiredJwtException e) {
-
-            //response body 작성
-            PrintWriter writer = response.getWriter();
-            writer.print("accessToken expired");
-
-            //토큰만료 401처리
+        if (jwtUtil.isExpired(accessToken)) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return;
+        }
+        
+        // 카테고리 검증
+        if (!"access".equals(jwtUtil.getCategory(accessToken))) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
+        
 
         // 사용자 정보 추출
         Long id = jwtUtil.getId(accessToken);

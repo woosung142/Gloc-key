@@ -33,7 +33,6 @@ const EditPage = () => {
       const blob = await response.blob();
 
       // 4. S3에 PUT 요청으로 업로드
-      // 주의: 이때는 공통 axios 인스턴스 대신 raw axios를 써야 헤더 꼬임이 없습니다.
       await axios.put(uploadUrl, blob, {
         headers: { 'Content-Type': 'image/png' }
       });
@@ -81,7 +80,7 @@ const EditPage = () => {
             </button>
           </div>
         </div>
-
+        
         <div className="flex justify-center bg-white p-4 rounded-xl shadow-inner">
           <CanvasEditor 
             ref={canvasRef} // ref 연결
