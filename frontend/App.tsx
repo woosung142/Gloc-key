@@ -7,8 +7,12 @@ import Dashboard from './components/Dashboard/Dashboard';
 import { authService } from './services/auth';
 
 const App: React.FC = () => {
+
+  const savedUser = localStorage.getItem('visionary_user');
+  const initialUser = savedUser ? JSON.parse(savedUser) : null;
+
   const [auth, setAuth] = useState<AuthState>({
-    user: null,
+    user: initialUser,
     token: localStorage.getItem('visionary_token'),
     isAuthenticated: !!localStorage.getItem('visionary_token'),
   });

@@ -6,11 +6,13 @@ export const authService = {
     const formData = new FormData();
     formData.append("username", username);
     formData.append("password", password);
+    const user = { name: username };
 
     const response = await api.post("/login", formData);
     const token = response.headers['access']; 
     if (token) {
       localStorage.setItem("visionary_token", token);
+      localStorage.setItem("visionary_user", JSON.stringify(user));
     }
     return { token, user: { name: username } };
   },
@@ -29,6 +31,7 @@ export const authService = {
       await api.delete("/logout");
     } finally {
       localStorage.removeItem("visionary_token");
+      localStorage.removeItem("visionary_user");
       window.location.href = "/login";
     }
   }
