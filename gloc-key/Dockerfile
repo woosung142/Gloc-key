@@ -114,4 +114,11 @@ COPY --from=builder /app/build/libs/app.jar app.jar
 ENV PATH="$PATH:/opt/java/bin"
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+#ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ENTRYPOINT ["java", \
+            "-Xms300m", \
+            "-Xmx300m", \
+            "-XX:+UseG1GC", \
+            "-XX:+ExitOnOutOfMemoryError", \
+            "-jar", "app.jar"]
