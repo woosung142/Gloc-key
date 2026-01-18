@@ -19,7 +19,7 @@ singleBinary:
   nodeSelector:
     role: worker
 gateway:
-  enabled: true
+  enabled: false
   ingress:
     enabled: false
 minio:
@@ -40,6 +40,7 @@ lokiCanary:
 loki:
   commonConfig:
     replication_factor: 1
+  auth_enabled: false
 
   storage:
     type: "s3"
