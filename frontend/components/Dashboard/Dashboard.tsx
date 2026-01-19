@@ -97,8 +97,12 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [selectedRootId, setSelectedRootId] = useState<string | null>(null);
+  const [selectedRootId, setSelectedRootId] = useState<String | null>(null);
   const [selectedLineage, setSelectedLineage] = useState<UserImage[]>([]);
+
+  const [isLineageOpen, setIsLineageOpen] = useState(false);
+  const [shouldRenderLineage, setShouldRenderLineage] = useState(false);
+
 
   useEffect(() => {
     fetchHistory();
@@ -121,20 +125,36 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
     return () => clearInterval(interval);
   }, [isGenerating]);
 
+  const closeLineagePanel = () => {
+    setIsLineageOpen(false);
+
+    setTimeout(() => {
+      setShouldRenderLineage(false);
+    }, 300);
+  };
+
+  const openLineagePanel = (rootId: String) => {
+  setSelectedRootId(rootId);
+  setShouldRenderLineage(true);
+
+  requestAnimationFrame(() => {
+    setIsLineageOpen(true);
+  });
+};
+
   
   // 계보 데이터를 불러오는 함수
-  const handleViewLineage = async (rootId: string) => {
-    try {
-      // 서비스 호출
-      const data = await imageService.getEditImageHistory(rootId);
-      
-      // 가져온 데이터를 상태에 저장하여 사이드 패널 활성화
-      setSelectedLineage(data);
-      setSelectedRootId(rootId);
-    } catch (error) {
-      console.error("편집 내역을 불러오지 못했습니다:", error);
-    }
-  };
+  const handleViewLineage = async (rootId: String) => {
+  try {
+    const data = await imageService.getEditImageHistory(String(rootId));
+    setSelectedLineage(data);
+
+    openLineagePanel(rootId); // ✅ 여기!
+  } catch (error) {
+    console.error("편집 내역을 불러오지 못했습니다:", error);
+  }
+};
+
 
   const fetchHistory = async () => {
     setIsLoading(true);
@@ -148,14 +168,39 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
     }
   };
 
-  const handleDirectDownload = (url: string, title: string) => {
+  // const handleDirectDownload = (url: string, title: string) => {
+  //   const link = document.createElement('a');
+  //   link.href = url;
+  //   link.download = `K-Edu-${title.replace(/\s/g, '_')}.png`;
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // };
+
+  const handleDirectDownload = async (url: string, title: string) => {
+  try {
+    // 캐시 문제 방지를 위해 cache: 'no-cache' 추가
+    const response = await fetch(url, { cache: 'no-cache' });
+    if (!response.ok) throw new Error('Network response was not ok');
+    
+    const blob = await response.blob();
+    const blobUrl = window.URL.createObjectURL(blob);
+    
     const link = document.createElement('a');
-    link.href = url;
-    link.download = `K-Edu-${title.replace(/\s/g, '_')}.png`;
+    link.href = blobUrl;
+    // link.download = `K-Edu-${title.replace(/\s/g, '_')}.png`;
+    link.download = `K-Edu-image.png`;
     document.body.appendChild(link);
     link.click();
+    
     document.body.removeChild(link);
-  };
+    window.URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    console.error("다운로드 중 오류가 발생했습니다:", error);
+    // CORS 오류 시 마지막 수단: 새 창에서 열기
+    window.open(url, '_blank');
+  }
+};
 
   const filteredAndSortedImages = useMemo(() => {
     let result = images.filter(img => {
@@ -633,145 +678,153 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
       )}
 
       {/* History Timeline Side Panel */}
-      {selectedRootId && (
-        <div className="fixed inset-0 z-[100] flex justify-end animate-fade-in">
-          <div className="absolute inset-0 bg-[#1E293B]/60 backdrop-blur-sm" onClick={() => setSelectedRootId(null)} />
-          <div className="relative w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-slide-left">
-            {/* ... (제공해주신 패널 코드 삽입) ... */}
-            {/* History Timeline Side Panel */}
-            {selectedRootId && (
-              <div className="fixed inset-0 z-[100] flex justify-end animate-fade-in">
+      {shouldRenderLineage && (
+  <div className="fixed inset-0 z-[100] flex justify-end">
+    {/* Backdrop */}
+    <div
+      onClick={closeLineagePanel}
+      className={`
+        absolute inset-0 bg-[#1E293B]/60 backdrop-blur-sm
+        transition-opacity duration-300
+        ${isLineageOpen ? 'opacity-100' : 'opacity-0'}
+      `}
+    />
+
+    {/* Side Panel */}
+    <div
+      className={`
+        relative w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col
+        transform transition-transform duration-300 ease-out
+        ${isLineageOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}
+    >
+      {/* Header */}
+      <header className="h-20 border-b border-slate-100 px-8 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-full bg-[#B59458]/10 text-[#B59458] flex items-center justify-center">
+            <GitBranch size={20} />
+          </div>
+          <div>
+            <h3 className="font-serif-ko text-xl font-black text-[#1E293B]">
+              타임라인
+            </h3>
+            <p className="text-[9px] uppercase tracking-widest font-black text-slate-400">
+              Lineage History
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={closeLineagePanel}
+          className="p-2 hover:bg-slate-50 rounded-xl transition-colors"
+        >
+          <X size={24} className="text-slate-400" />
+        </button>
+      </header>
+
+      {/* Content */}
+      <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+        <div className="space-y-16 relative">
+          {/* Vertical Line */}
+          <div className="absolute left-[29px] top-10 bottom-10 w-px bg-gradient-to-b from-[#B59458] via-[#B59458]/30 to-transparent z-0" />
+
+          {selectedLineage.map((img, idx) => (
+            <div key={img.id} className="relative z-10 flex gap-10 group/item">
+              {/* Timeline Dot */}
+              <div className="relative mt-2">
                 <div
-                  className="absolute inset-0 bg-[#1E293B]/60 backdrop-blur-sm"
-                  onClick={() => setSelectedRootId(null)}
-                />
-                <div className="relative w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-slide-left">
-                  <header className="h-20 border-b border-slate-100 px-8 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-[#B59458]/10 text-[#B59458] flex items-center justify-center">
-                        <GitBranch size={20} />
-                      </div>
-                      <div>
-                        <h3 className="font-serif-ko text-xl font-black text-[#1E293B]">
-                          타임라인
-                        </h3>
-                        <p className="text-[9px] uppercase tracking-widest font-black text-slate-400">
-                          Lineage History
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setSelectedRootId(null)}
-                      className="p-2 hover:bg-slate-50 rounded-xl transition-colors"
+                  className={`w-[60px] h-[60px] rounded-full flex items-center justify-center border-4 transition-all duration-500 shadow-xl ${
+                    idx === 0
+                      ? 'bg-[#1E293B] border-[#B59458] text-white'
+                      : 'bg-white border-slate-100 group-hover/item:border-[#B59458] text-slate-300'
+                  }`}
+                >
+                  {idx === 0 ? (
+                    <Sparkles size={24} />
+                  ) : (
+                    <FileText
+                      size={24}
+                      className="group-hover/item:text-[#B59458]"
+                    />
+                  )}
+                </div>
+
+                {idx > 0 && (
+                  <div className="absolute -left-4 top-1/2 -translate-y-1/2 flex items-center text-[#B59458]">
+                    <ChevronRight size={16} />
+                  </div>
+                )}
+              </div>
+
+              {/* Card */}
+              <div className="flex-1 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <span
+                      className={`text-[10px] font-black uppercase tracking-widest ${
+                        idx === 0 ? 'text-[#B59458]' : 'text-slate-400'
+                      }`}
                     >
-                      <X size={24} className="text-slate-400" />
-                    </button>
-                  </header>
-
-                  <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-                    <div className="space-y-16 relative">
-                      {/* Vertical Connection Line */}
-                      <div className="absolute left-[29px] top-10 bottom-10 w-px bg-gradient-to-b from-[#B59458] via-[#B59458]/30 to-transparent z-0" />
-
-                      {selectedLineage.map((img, idx) => (
-                        <div key={img.id} className="relative z-10 flex gap-10 group/item">
-                          {/* Timeline Dot & Branch indicator */}
-                          <div className="relative mt-2">
-                            <div
-                              className={`w-[60px] h-[60px] rounded-full flex items-center justify-center border-4 transition-all duration-500 shadow-xl ${
-                                idx === 0
-                                  ? 'bg-[#1E293B] border-[#B59458] text-white'
-                                  : 'bg-white border-slate-100 group-hover/item:border-[#B59458] text-slate-300'
-                              }`}
-                            >
-                              {idx === 0 ? (
-                                <Sparkles size={24} />
-                              ) : (
-                                <FileText
-                                  size={24}
-                                  className="group-hover/item:text-[#B59458]"
-                                />
-                              )}
-                            </div>
-                            {idx > 0 && (
-                              <div className="absolute -left-4 top-1/2 -translate-y-1/2 flex items-center text-[#B59458]">
-                                <ChevronRight size={16} />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex-1 space-y-6">
-                            <div className="flex items-center justify-between">
-                              <div className="space-y-1">
-                                <span
-                                  className={`text-[10px] font-black uppercase tracking-widest ${
-                                    idx === 0
-                                      ? 'text-[#B59458]'
-                                      : 'text-slate-400'
-                                  }`}
-                                >
-                                  {idx === 0 ? 'ORIGINAL ROOT' : `VERSION ${idx}`}
-                                </span>
-                                <div className="flex items-center gap-2 text-slate-400 text-[11px] font-bold">
-                                  <Clock size={12} />
-                                  {new Date(img.createdAt).toLocaleString()}
-                                </div>
-                              </div>
-                              <div className="flex gap-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
-                                <button
-                                  onClick={() => {
-                                    setActiveImageUrl(img.originalUrl)
-                                    setActiveImageRecord(img)
-                                    setIsEditorOpen(true)
-                                  }}
-                                  className="px-4 py-2 bg-[#1E293B] text-white text-[10px] font-black uppercase rounded-lg shadow-lg hover:bg-black transition-all"
-                                >
-                                  편집실 입장
-                                </button>
-                                <button
-                                  onClick={() => setDeleteTargetId(img.id)}
-                                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </div>
-                            </div>
-
-                            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-slate-100 shadow-xl group/img">
-                              <img
-                                src={img.originalUrl}
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-105"
-                              />
-                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-8">
-                                <h4 className="text-white font-serif-ko font-bold text-lg line-clamp-1">
-                                  {img.title}
-                                </h4>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
+                      {idx === 0 ? 'ORIGINAL ROOT' : `VERSION ${idx}`}
+                    </span>
+                    <div className="flex items-center gap-2 text-slate-400 text-[11px] font-bold">
+                      <Clock size={12} />
+                      {new Date(img.createdAt).toLocaleString()}
                     </div>
+                  </div>
+
+                  <div className="flex gap-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                    <button
+                      onClick={() =>
+                        handleDirectDownload(img.originalUrl, img.title)
+                      }
+                      className="p-2 bg-white text-slate-600 hover:text-[#B59458] rounded-xl shadow-md transition-colors"
+                    >
+                      <Download size={18} />
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setActiveImageUrl(img.originalUrl);
+                        setActiveImageRecord(img);
+                        setIsEditorOpen(true);
+                        closeLineagePanel();
+                      }}
+                      className="px-4 py-2 bg-[#1E293B] text-white text-[10px] font-black uppercase rounded-lg shadow-lg hover:bg-black transition-all"
+                    >
+                      편집실 입장
+                    </button>
+
+                    <button
+                      onClick={() => setDeleteTargetId(img.id)}
+                      className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-slate-100 shadow-xl group/img">
+                  <img
+                    src={img.originalUrl}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-105"
+                  />
+                  <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-8">
+                    <h4 className="text-white font-serif-ko font-bold text-lg line-clamp-1">
+                      {img.title}
+                    </h4>
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* 데이터 매핑 부분 확인 */}
-            <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
-              <div className="space-y-16 relative">
-                <div className="absolute left-[29px] top-10 bottom-10 w-px bg-gradient-to-b from-[#B59458] via-[#B59458]/30 to-transparent z-0" />
-                
-                {selectedLineage.map((img, idx) => (
-                  <div key={img.id} className="relative z-10 flex gap-10 group/item">
-                    {/* ... (제공해주신 리스트 아이템 코드) ... */}
-                  </div>
-                ))}
-              </div>
             </div>
-          </div>
+          ))}
         </div>
-      )}
+      </div>
+    </div>
+  </div>
+)}
+
+
+
 
       <footer className="py-32 bg-white border-t border-slate-50">
         <div className="max-w-4xl mx-auto px-6 text-center space-y-12">

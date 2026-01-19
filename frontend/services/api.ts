@@ -31,18 +31,22 @@ export const imageService = {
 
   getEditImageHistory: async (rootImageId: string): Promise<UserImage[]> => {
     const response = await api.get(`/images/history/${rootImageId}/edits`);
-    const data = response.data; // List<EditImageHistoryResponse>
+    const data = response.data || []; // List<EditImageHistoryResponse>
 
-    return (data || []).map((img: any) => ({
+    return data.map((img: any, idx: number) => ({
       id: String(img.imageId),
-      title: "편집된 자료",
+      title: idx === 0 ? "원본" : "편집된 자료",
       originalUrl: img.imageUrl,
       createdAt: img.createdAt,
-      parentImageId: img.parentImageId ? String(img.parentImageId) : undefined,
-      rootImageId: rootImageId,
-      isEdit: true
+      parentImageId:
+        idx === 0 ? undefined : img.parentImageId
+          ? String(img.parentImageId)
+          : undefined,
+      rootImageId,
+      isEdit: idx !== 0
     }));
   },
+
 
   // 2. 이미지 생성 (백엔드 ImageController.generateImage 대응)
   generateEduImage: async (prompt: string, options: GenerateOptions): Promise<ImageGenerateResponse> => {
