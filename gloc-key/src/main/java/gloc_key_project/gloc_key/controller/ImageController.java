@@ -89,6 +89,8 @@ public class ImageController {
     ) {
         DeleteImageResponse response =
                 imageService.deleteImage(imageId, userDetails.getId());
+
+        return ResponseEntity.ok(response);
     }
 
 }
