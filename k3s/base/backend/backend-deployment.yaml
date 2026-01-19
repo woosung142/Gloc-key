@@ -40,7 +40,10 @@ spec:
               value: "otlp"
 
             - name: OTEL_METRICS_EXPORTER
-              value: "none"
+              value: "otlp"
+
+            - name: OTEL_LOGS_EXPORTER
+              value: "otlp"
 
             - name: OTEL_EXPORTER_OTLP_INSECURE
               value: "true"
