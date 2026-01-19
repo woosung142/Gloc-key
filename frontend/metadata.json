@@ -1,0 +1,7 @@
+{
+  "name": "Visionary - Pro Image History & Editor",
+  "description": "A high-performance image management and editing suite featuring JWT authentication, history tracking, and a professional-grade Canvas editor powered by Konva.js.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
