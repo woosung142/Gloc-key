@@ -12,5 +12,6 @@ import java.time.LocalDateTime;
 public class EditImageHistoryResponse {
     private Long imageId;
     private String imageUrl;
+    private Long parentImageId;
     private LocalDateTime createdAt;
 }

@@ -82,4 +82,15 @@ public class ImageController {
         return ResponseEntity.ok(response);
     }
 
+    @DeleteMapping("{imageId}")
+    public ResponseEntity<DeleteImageResponse> deleteImage(
+            @PathVariable Long imageId,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        DeleteImageResponse response =
+                imageService.deleteImage(imageId, userDetails.getId());
+
+        return ResponseEntity.ok(response);
+    }
+
 }

@@ -7,8 +7,10 @@ import {
   Sparkles, LogOut, X, Search, BookOpen, ArrowUpRight, Palette, 
   ChevronRight, Trash2, AlertCircle, RotateCw, ListFilter, Filter, 
   Check, ChevronDown, UserCircle, Download, Wand2, MapPin, 
-  History, Paintbrush, LayoutGrid, Layers, MousePointer2
+  History, Paintbrush, LayoutGrid, Layers, MousePointer2,
+  GitBranch, FileText, Clock
 } from 'lucide-react';
+
 import { authService } from '../../services/auth';
 
 interface Props {
@@ -95,6 +97,9 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  const [selectedRootId, setSelectedRootId] = useState<string | null>(null);
+  const [selectedLineage, setSelectedLineage] = useState<UserImage[]>([]);
+
   useEffect(() => {
     fetchHistory();
     const handleClickOutside = (event: MouseEvent) => {
@@ -115,6 +120,21 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
     }
     return () => clearInterval(interval);
   }, [isGenerating]);
+
+  
+  // 계보 데이터를 불러오는 함수
+  const handleViewLineage = async (rootId: string) => {
+    try {
+      // 서비스 호출
+      const data = await imageService.getEditImageHistory(rootId);
+      
+      // 가져온 데이터를 상태에 저장하여 사이드 패널 활성화
+      setSelectedLineage(data);
+      setSelectedRootId(rootId);
+    } catch (error) {
+      console.error("편집 내역을 불러오지 못했습니다:", error);
+    }
+  };
 
   const fetchHistory = async () => {
     setIsLoading(true);
@@ -398,7 +418,7 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
 
               {/* 필터 드롭다운 (너비 고정) */}
               <div className="relative" ref={filterRef}>
-                <button 
+                {/* <button 
                   onClick={() => { setIsFilterOpen(!isFilterOpen); setIsSortOpen(false); }}
                   className={`min-w-[140px] px-6 py-4 bg-white rounded-2xl border flex items-center justify-between gap-3 text-sm font-bold transition-all ${isFilterOpen ? 'border-[#B59458] ring-4 ring-[#B59458]/5' : 'border-slate-100'}`}
                 >
@@ -407,7 +427,7 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
                     <span className="truncate">{filterOptions.find(o => o.value === filterType)?.label}</span>
                   </div>
                   <ChevronDown size={16} className={`flex-shrink-0 transition-transform ${isFilterOpen ? 'rotate-180' : ''}`} />
-                </button>
+                </button> */}
                 {isFilterOpen && (
                   <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-2xl border border-slate-100 shadow-2xl z-50 py-2 animate-fade-in">
                     {filterOptions.map(opt => (
@@ -481,10 +501,25 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
                       <button onClick={(e) => { e.stopPropagation(); handleDirectDownload(img.originalUrl, img.title); }} className="p-3 bg-white text-[#1E293B] hover:text-[#B59458] rounded-xl shadow-xl transition-colors" title="이미지 다운로드">
                         <Download size={18} />
                       </button>
+
+                      {/* --- 히스토리 버튼 추가 --- */}
+                      {!img.isEdit && (
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); handleViewLineage(img.id); }}
+                          className="p-3 bg-white text-slate-400 hover:text-[#B59458] rounded-xl shadow-xl transition-colors"
+                          title="편집 이력 보기"
+                        >
+                          <History size={18} />
+                        </button>
+                      )}
+
+
                       <button onClick={(e) => { e.stopPropagation(); setDeleteTargetId(img.id); }} className="p-3 bg-white text-slate-300 hover:text-rose-500 rounded-xl shadow-xl transition-colors" title="자료 삭제">
                         <Trash2 size={18} />
                       </button>
                     </div>
+
+
 
                     <div className="absolute bottom-8 left-8 right-8 translate-y-8 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
                       <div className="bg-[#B59458] text-white py-4 rounded-2xl flex items-center justify-center gap-3 font-black text-xs uppercase tracking-widest shadow-2xl shadow-[#B59458]/40">
@@ -594,6 +629,147 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
             }}
             onSave={() => { fetchHistory(); setIsEditorOpen(false); }}
           />
+        </div>
+      )}
+
+      {/* History Timeline Side Panel */}
+      {selectedRootId && (
+        <div className="fixed inset-0 z-[100] flex justify-end animate-fade-in">
+          <div className="absolute inset-0 bg-[#1E293B]/60 backdrop-blur-sm" onClick={() => setSelectedRootId(null)} />
+          <div className="relative w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-slide-left">
+            {/* ... (제공해주신 패널 코드 삽입) ... */}
+            {/* History Timeline Side Panel */}
+            {selectedRootId && (
+              <div className="fixed inset-0 z-[100] flex justify-end animate-fade-in">
+                <div
+                  className="absolute inset-0 bg-[#1E293B]/60 backdrop-blur-sm"
+                  onClick={() => setSelectedRootId(null)}
+                />
+                <div className="relative w-full max-w-2xl bg-white h-full shadow-2xl flex flex-col animate-slide-left">
+                  <header className="h-20 border-b border-slate-100 px-8 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-full bg-[#B59458]/10 text-[#B59458] flex items-center justify-center">
+                        <GitBranch size={20} />
+                      </div>
+                      <div>
+                        <h3 className="font-serif-ko text-xl font-black text-[#1E293B]">
+                          타임라인
+                        </h3>
+                        <p className="text-[9px] uppercase tracking-widest font-black text-slate-400">
+                          Lineage History
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setSelectedRootId(null)}
+                      className="p-2 hover:bg-slate-50 rounded-xl transition-colors"
+                    >
+                      <X size={24} className="text-slate-400" />
+                    </button>
+                  </header>
+
+                  <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+                    <div className="space-y-16 relative">
+                      {/* Vertical Connection Line */}
+                      <div className="absolute left-[29px] top-10 bottom-10 w-px bg-gradient-to-b from-[#B59458] via-[#B59458]/30 to-transparent z-0" />
+
+                      {selectedLineage.map((img, idx) => (
+                        <div key={img.id} className="relative z-10 flex gap-10 group/item">
+                          {/* Timeline Dot & Branch indicator */}
+                          <div className="relative mt-2">
+                            <div
+                              className={`w-[60px] h-[60px] rounded-full flex items-center justify-center border-4 transition-all duration-500 shadow-xl ${
+                                idx === 0
+                                  ? 'bg-[#1E293B] border-[#B59458] text-white'
+                                  : 'bg-white border-slate-100 group-hover/item:border-[#B59458] text-slate-300'
+                              }`}
+                            >
+                              {idx === 0 ? (
+                                <Sparkles size={24} />
+                              ) : (
+                                <FileText
+                                  size={24}
+                                  className="group-hover/item:text-[#B59458]"
+                                />
+                              )}
+                            </div>
+                            {idx > 0 && (
+                              <div className="absolute -left-4 top-1/2 -translate-y-1/2 flex items-center text-[#B59458]">
+                                <ChevronRight size={16} />
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex-1 space-y-6">
+                            <div className="flex items-center justify-between">
+                              <div className="space-y-1">
+                                <span
+                                  className={`text-[10px] font-black uppercase tracking-widest ${
+                                    idx === 0
+                                      ? 'text-[#B59458]'
+                                      : 'text-slate-400'
+                                  }`}
+                                >
+                                  {idx === 0 ? 'ORIGINAL ROOT' : `VERSION ${idx}`}
+                                </span>
+                                <div className="flex items-center gap-2 text-slate-400 text-[11px] font-bold">
+                                  <Clock size={12} />
+                                  {new Date(img.createdAt).toLocaleString()}
+                                </div>
+                              </div>
+                              <div className="flex gap-2 opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                <button
+                                  onClick={() => {
+                                    setActiveImageUrl(img.originalUrl)
+                                    setActiveImageRecord(img)
+                                    setIsEditorOpen(true)
+                                  }}
+                                  className="px-4 py-2 bg-[#1E293B] text-white text-[10px] font-black uppercase rounded-lg shadow-lg hover:bg-black transition-all"
+                                >
+                                  편집실 입장
+                                </button>
+                                <button
+                                  onClick={() => setDeleteTargetId(img.id)}
+                                  className="p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+
+                            <div className="relative aspect-[4/3] rounded-3xl overflow-hidden border border-slate-100 shadow-xl group/img">
+                              <img
+                                src={img.originalUrl}
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover/img:scale-105"
+                              />
+                              <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-8">
+                                <h4 className="text-white font-serif-ko font-bold text-lg line-clamp-1">
+                                  {img.title}
+                                </h4>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 데이터 매핑 부분 확인 */}
+            <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
+              <div className="space-y-16 relative">
+                <div className="absolute left-[29px] top-10 bottom-10 w-px bg-gradient-to-b from-[#B59458] via-[#B59458]/30 to-transparent z-0" />
+                
+                {selectedLineage.map((img, idx) => (
+                  <div key={img.id} className="relative z-10 flex gap-10 group/item">
+                    {/* ... (제공해주신 리스트 아이템 코드) ... */}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
