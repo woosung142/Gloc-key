@@ -104,6 +104,7 @@ public class ImageService {
                 .prompt(image.getPrompt())
                 .imageUrl(s3Service.createPresignedGetUrl(image.getS3Key()))
                 .createdAt(image.getCreatedAt())
+                .hasEdited(imageRepository.existsByParentImage(image))
                 .build());
 
     }
@@ -124,9 +125,10 @@ public class ImageService {
         List<Image> images = imageRepository.findByRootImageIdOrderByCreatedAtDesc(rootImageId);
 
         return images.stream()
-                .filter(image -> image.getParentImage() != null)
+//                .filter(image -> image.getParentImage() != null)
                 .map(image -> EditImageHistoryResponse.builder()
                         .imageId(image.getId())
+                        .parentImageId(image.getParentImage().getId())
                         .imageUrl(s3Service.createPresignedGetUrl(image.getS3Key()))
                         .createdAt(image.getCreatedAt())
                         .build())

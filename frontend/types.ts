@@ -23,11 +23,16 @@ export interface UserImage {
   originalUrl: string;
   createdAt: string;
   title: string;
+  // --- 계보 관련 필드 추가 ---
+  rootImageId: string;    // 그룹화를 위한 최상위 ID
+  parentImageId?: string; // 직계 부모 ID
+  hasEdited?: boolean;    // 편집본 존재 여부 (선택 사항)
+  isEdit?: boolean;
+  // -----------------------
   edits: ImageEdit[];
   editsJson?: string;
-  parentId?: string;
+  parentId?: string; // 기존 필드 유지
   parentTitle?: string;
-  isEdit?: boolean;
 }
 
 export interface KonvaElement {

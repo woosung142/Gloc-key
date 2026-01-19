@@ -29,4 +29,6 @@ public interface ImageRepository extends JpaRepository<Image, Long> {
     @Modifying(clearAutomatically = true)
     @Query("UPDATE Image i SET i.rootImageId = :newRootId WHERE i.rootImageId = :oldRootId")
     void updateRootImageId(@Param("oldRootId") Long oldRootId, @Param("newRootId") Long newRootId);
+
+    Boolean existsByParentImage(Image Image);
 }
