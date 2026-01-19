@@ -128,7 +128,11 @@ public class ImageService {
 //                .filter(image -> image.getParentImage() != null)
                 .map(image -> EditImageHistoryResponse.builder()
                         .imageId(image.getId())
-                        .parentImageId(image.getParentImage().getId())
+                        .parentImageId(
+                                image.getParentImage() != null
+                                        ? image.getParentImage().getId()
+                                        : null
+                        )
                         .imageUrl(s3Service.createPresignedGetUrl(image.getS3Key()))
                         .createdAt(image.getCreatedAt())
                         .build())
