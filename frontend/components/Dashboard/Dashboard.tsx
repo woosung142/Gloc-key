@@ -295,19 +295,48 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
     setIsEditorOpen(true);
   };
 
+  // const handleDeleteConfirm = async () => {
+  //   if (!deleteTargetId) return;
+  //   setIsDeleting(true);
+  //   try {
+  //     await imageService.deleteImageRecord(deleteTargetId);
+  //     await fetchHistory();
+  //     setDeleteTargetId(null);
+  //   } catch (error) {
+  //     alert('삭제 중 오류가 발생했습니다.');
+  //   } finally {
+  //     setIsDeleting(false);
+  //   }
+  // };
+
   const handleDeleteConfirm = async () => {
-    if (!deleteTargetId) return;
-    setIsDeleting(true);
-    try {
-      await imageService.deleteImageRecord(deleteTargetId);
-      await fetchHistory();
-      setDeleteTargetId(null);
-    } catch (error) {
-      alert('삭제 중 오류가 발생했습니다.');
-    } finally {
-      setIsDeleting(false);
+  if (!deleteTargetId) return;
+
+  setIsDeleting(true);
+  try {
+    await imageService.deleteImageRecord(deleteTargetId);
+
+    // ✅ 메인 리스트 갱신
+    await fetchHistory();
+
+    // ✅ 사이드바 계보에서도 제거
+    setSelectedLineage(prev =>
+      prev.filter(img => img.id !== deleteTargetId)
+    );
+
+    // (선택) 루트 삭제 시 사이드바 닫기
+    if (deleteTargetId === selectedRootId) {
+      closeLineagePanel();
     }
-  };
+
+    setDeleteTargetId(null);
+  } catch (error) {
+    alert('삭제 중 오류가 발생했습니다.');
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
 
   return (
     <div className="min-h-screen flex flex-col selection:bg-[#B59458]/20 selection:text-[#1E293B]">
