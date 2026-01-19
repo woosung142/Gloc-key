@@ -1,9 +1,6 @@
 package gloc_key_project.gloc_key.service;
 
-import gloc_key_project.gloc_key.dto.EditImageHistoryResponse;
-import gloc_key_project.gloc_key.dto.ImageGenerateResponse;
-import gloc_key_project.gloc_key.dto.ImageHistoryResponse;
-import gloc_key_project.gloc_key.dto.ImageStatusResponse;
+import gloc_key_project.gloc_key.dto.*;
 import gloc_key_project.gloc_key.entity.Image;
 import gloc_key_project.gloc_key.repository.ImageRepository;
 import lombok.RequiredArgsConstructor;
@@ -14,10 +11,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 
@@ -136,6 +134,70 @@ public class ImageService {
 
     }
 
+    @Transactional
+    public DeleteImageResponse deleteImage(Long imageId, Long userId) {
+        // 1. 이미지 존재 확인
+        Image targetImage = imageRepository.findById(imageId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 이미지가 존재하지 않습니다."));
+
+        if (targetImage.getUser().getId() != userId){
+            throw new AccessDeniedException("본인의 이미지만 삭제가 가능합니다.");
+        }
+        Long targetId = targetImage.getId();
+        Long rootId = targetImage.getRootImageId();
+        Image parent = targetImage.getParentImage();
+        final String s3KeyToDelete = targetImage.getS3Key();
+
+        // 2. 삭제 대상이 원본인지 확인
+        boolean isRoot = targetId.equals(rootId);
+
+        if (isRoot) {
+            // 원본 삭제: 나를 루트로 삼는 다른 이미지들을 찾음 (나 제외)
+            List<Image> descendants = imageRepository.findAllByRootImageIdOrderByCreatedAtAsc(targetId)
+                    .stream().filter(img -> !img.getId().equals(targetId)).toList();
+
+            if (!descendants.isEmpty()) {
+                Image newRoot = descendants.get(0);
+                newRoot.setParentImage(null);
+                newRoot.setRootImageId(newRoot.getId());
+
+                // 삭제될 targetImage를 부모로 가졌던 자식들을 newRoot에게 연결
+                List<Image> directChildren = imageRepository.findAllByParentImage(targetImage);
+                for (Image child : directChildren) {
+                    if (!child.equals(newRoot)) { // newRoot는 이미 null 처리됨
+                        child.setParentImage(newRoot);
+                    }
+                }
+
+                // 나머지 후손들 rootId 일괄 변경
+                imageRepository.updateRootImageId(targetId, newRoot.getId());
+            }
+        } else {
+            // 편집본 삭제: 나를 부모로 참조하는 직계 자식들을 찾음
+            List<Image> children = imageRepository.findAllByParentImage(targetImage);
+
+            if (!children.isEmpty()) {
+                for (Image child : children) {
+                    // 할아버지에게 입양
+                    child.setParentImage(parent);
+                }
+            }
+        }
+
+        // 3. 삭제 처리
+        imageRepository.delete(targetImage);
+
+
+        // 4. 트랜잭션 커밋 성공 후 S3 삭제 이벤트 발행
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                s3Service.deleteObject(s3KeyToDelete);
+            }
+        });
+
+        return new DeleteImageResponse("이미지가 성공적으로 삭제되었습니다.");
+    }
 
     // 비동기 작업 상태 관리를 위한 Redis Hash 저장 로직
     private String saveTaskToRedis(String username, String prompt) {
