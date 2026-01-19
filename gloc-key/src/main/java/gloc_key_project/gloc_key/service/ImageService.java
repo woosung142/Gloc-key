@@ -122,7 +122,8 @@ public class ImageService {
 
         // 원본 이미지로부터 생성된 편집 이미지 조회
         Long rootImageId = originalImage.getRootImageId();
-        List<Image> images = imageRepository.findByRootImageIdOrderByCreatedAtDesc(rootImageId);
+        List<Image> images = imageRepository.findAllByRootImageIdOrderByCreatedAtAsc(rootImageId);
+
 
         return images.stream()
 //                .filter(image -> image.getParentImage() != null)
