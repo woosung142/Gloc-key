@@ -35,3 +35,12 @@ variable "tempo_bucket_arn" {
   description = "ARN of the Tempo S3 bucket"
   type        = string
 }
+
+variable "loki_bucket_name" {
+  description = "S3 버킷명"
+  type        = string
+}
+variable "loki_bucket_arn" {
+  description = "ARN of the Loki S3 bucket"
+  type        = string
+}

@@ -394,3 +394,32 @@ resource "aws_iam_role_policy_attachment" "tempo_attach" {
   role       = aws_iam_role.worker_role.name
   policy_arn = aws_iam_policy.tempo_s3_policy.arn
 }
+
+# Loki S3 버킷 접근 정책 생성 (worker)
+resource "aws_iam_policy" "loki_s3_policy" {
+  name        = "${var.loki_bucket_name}-policy"
+
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject" 
+            ],
+            "Resource": [
+                "${var.loki_bucket_arn}",
+                "${var.loki_bucket_arn}/*"
+            ]
+        }
+    ]
+})
+}
+
+resource "aws_iam_role_policy_attachment" "loki_attach" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.loki_s3_policy.arn
+}

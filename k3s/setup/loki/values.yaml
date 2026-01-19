@@ -1,0 +1,106 @@
+# global:
+#   dnsNamespace: "logging"
+namespaceOverride: "logging"
+deploymentMode: SingleBinary
+
+singleBinary:
+  enabled: true
+  replicas: 1
+  resources:
+    requests:
+      cpu: 100m
+      memory: 512Mi
+    limits:
+      # cpu: 3
+      memory: 1Gi
+  extraEnv:
+    - name: GOMEMLIMIT
+      value: 950MiB
+  nodeSelector:
+    role: worker
+gateway:
+  enabled: false
+  ingress:
+    enabled: false
+minio:
+  enabled: false
+
+chunksCache:
+  enabled: false
+
+resultsCache:
+  enabled: false
+
+test:
+  enabled: false
+
+lokiCanary:
+  enabled: false
+
+loki:
+  commonConfig:
+    replication_factor: 1
+    compactor_grpc_address: 'loki.logging.svc.cluster.local:9095'
+  auth_enabled: false
+
+  storage:
+    type: "s3"
+    s3:
+      region: ap-northeast-2
+    bucketNames:
+      chunks: gloc-key-loki-logs-s3-bucket
+      ruler: gloc-key-loki-logs-s3-bucket 
+      admin: gloc-key-loki-logs-s3-bucket
+  
+  schemaConfig:
+    configs:
+      - from: 2024-04-01
+        store: tsdb
+        object_store: s3
+        schema: v13
+        index:
+          prefix: loki_index_
+          period: 24h
+  ingester:
+    chunk_encoding: snappy # 압축
+  tracing:
+    enabled: true # 트레이싱 활성화
+  querier:
+    max_concurrent: 2 
+  
+  compactor:
+    working_directory: /var/loki/compactor
+    compaction_interval: 10m
+    retention_enabled: true
+    retention_delete_delay: 2h
+    retention_delete_worker_count: 150
+    delete_request_store: s3
+
+  limits_config:
+    retention_period: 720h  # 30 days
+
+backend:
+  replicas: 0
+read:
+  replicas: 0
+write:
+  replicas: 0
+
+ingester:
+  replicas: 0
+querier:
+  replicas: 0
+queryFrontend:
+  replicas: 0
+queryScheduler:
+  replicas: 0
+distributor:
+  replicas: 0
+compactor:
+  replicas: 0
+indexGateway:
+  replicas: 0
+bloomCompactor:
+  replicas: 0
+bloomGateway:
+  replicas: 0
