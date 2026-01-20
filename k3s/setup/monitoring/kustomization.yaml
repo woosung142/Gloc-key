@@ -6,6 +6,7 @@ resources:
   - dash-node.yaml
   - dash-redis.yaml
   - dash-tempo.yaml
+  - dash-back.yaml
   
 helmCharts:
   - name: kube-prometheus-stack
