@@ -33,8 +33,10 @@ repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
       memory: 120Mi #40Mi
     limits:
       #cpu: 200m #6m
-      memory: 360Mi #120Mi
-
+      memory: 2Gi #120Mi
+  env:
+    - name: ARGOCD_REPO_SERVER_PARALLELISM_LIMIT
+      value: "1"
 applicationSet:
   replicas: 0
 
