@@ -8,7 +8,7 @@ import {
   ChevronRight, Trash2, AlertCircle, RotateCw, ListFilter, Filter, 
   Check, ChevronDown, UserCircle, Download, Wand2, MapPin, 
   History, Paintbrush, LayoutGrid, Layers, MousePointer2,
-  GitBranch, FileText, Clock
+  GitBranch, FileText, Clock, MessageSquare
 } from 'lucide-react';
 
 import { authService } from '../../services/auth';
@@ -97,7 +97,9 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const [selectedRootId, setSelectedRootId] = useState<String | null>(null);
+  const [selectedRootId, setSelectedRootId] = useState<string | null>(null);
+  const [selectedRootPrompt, setSelectedRootPrompt] = useState<string | null>(null);
+
   const [selectedLineage, setSelectedLineage] = useState<UserImage[]>([]);
 
   const [isLineageOpen, setIsLineageOpen] = useState(false);
@@ -133,23 +135,25 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
     }, 300);
   };
 
-  const openLineagePanel = (rootId: String) => {
-  setSelectedRootId(rootId);
-  setShouldRenderLineage(true);
+  const openLineagePanel = (rootId: string, prompt: string) => {
+    setSelectedRootId(rootId);
+    setSelectedRootPrompt(prompt);
+    setShouldRenderLineage(true);
 
-  requestAnimationFrame(() => {
-    setIsLineageOpen(true);
-  });
-};
+    requestAnimationFrame(() => {
+      setIsLineageOpen(true);
+    });
+  };
+
 
   
   // 계보 데이터를 불러오는 함수
-  const handleViewLineage = async (rootId: String) => {
+  const handleViewLineage = async (rootId: string, prompt: string) => {
   try {
     const data = await imageService.getEditImageHistory(String(rootId));
     setSelectedLineage(data);
 
-    openLineagePanel(rootId); // ✅ 여기!
+    openLineagePanel(rootId, prompt); // ✅ 여기!
   } catch (error) {
     console.error("편집 내역을 불러오지 못했습니다:", error);
   }
@@ -579,7 +583,7 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
                       {/* --- 히스토리 버튼 추가 --- */}
                       {!img.isEdit && (
                         <button 
-                          onClick={(e) => { e.stopPropagation(); handleViewLineage(img.id); }}
+                          onClick={(e) => { e.stopPropagation(); handleViewLineage(img.id, img.title); }}
                           className="p-3 bg-white text-slate-400 hover:text-[#B59458] rounded-xl shadow-xl transition-colors"
                           title="편집 이력 보기"
                         >
@@ -749,6 +753,21 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
           <X size={24} className="text-slate-400" />
         </button>
       </header>
+
+      <div className="border-b border-slate-100 px-8 py-5 bg-[#FAFAF9]">
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-slate-400">
+            <MessageSquare size={12} />
+            Original Prompt
+          </div>
+
+          <p className="text-sm text-slate-700 font-medium leading-relaxed line-clamp-3">
+            {selectedRootPrompt?.trim()
+              ? selectedRootPrompt
+              : '프롬프트 정보가 없습니다.'}
+          </p>
+        </div>
+      </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-12 custom-scrollbar">
