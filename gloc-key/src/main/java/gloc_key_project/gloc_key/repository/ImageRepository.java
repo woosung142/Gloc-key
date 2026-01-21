@@ -14,6 +14,10 @@ import java.util.Optional;
 public interface ImageRepository extends JpaRepository<Image, Long> {
     Optional<Image> findByJobId(String jobId);
 
+    List<String> findS3KeysByUserId(Long userId);
+
+    Boolean deleteByUserId(Long userId);
+
     Page<Image> findAllByUser_Id(Long userId, Pageable pageable);
 
     Page<Image> findByUser_IdAndParentImageIsNull(Long userId, Pageable pageable);

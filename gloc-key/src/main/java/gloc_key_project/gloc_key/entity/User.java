@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-@Setter
 @Entity
 @AllArgsConstructor // 전체 필드 생성자 추가
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
