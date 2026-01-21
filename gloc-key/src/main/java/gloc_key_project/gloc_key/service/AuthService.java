@@ -31,11 +31,14 @@ public class AuthService {
     public void SignupProcess(SignupRequest signupRequest) {
 
         String username = signupRequest.getUsername();
+        String email = signupRequest.getEmail();
         String password = signupRequest.getPassword();
 
 
-        if (username == null || username.isBlank() || password == null || password.isBlank()) {
-            throw new IllegalArgumentException("username 또는 password가 비어있습니다.");
+        if (username == null || username.isBlank() ||
+                email == null || email.isBlank() ||
+                password == null || password.isBlank()) {
+            throw new IllegalArgumentException("값을 입력해주세요");
         }
 
         //id 중복 검증
@@ -43,8 +46,13 @@ public class AuthService {
             throw new IllegalArgumentException("해당 아이디가 존재합니다.");
         }
 
+        if(userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
+        }
+
         User userEntity = User.builder()
                 .username(username)
+                .email(email)
                 .password(bCryptPasswordEncoder.encode(password))
                 .role("ROLE_USER")
                 .build();
