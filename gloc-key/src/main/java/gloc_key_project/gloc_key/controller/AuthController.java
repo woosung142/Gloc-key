@@ -20,7 +20,6 @@ public class AuthController {
 
     @PostMapping("/signup")
     public ResponseEntity<?> signupProcess(SignupRequest signupRequest) {
-
         authService.SignupProcess(signupRequest);
 
         return new ResponseEntity<>(HttpStatus.OK);

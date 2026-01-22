@@ -13,6 +13,8 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -96,4 +98,17 @@ public class S3Service {
             return false;
         }
     }
+
+    public List<String> deleteObjects(List<String> s3Keys) {
+        List<String> failedKeys = new ArrayList<>();
+
+        for (String key : s3Keys) {
+            if (!deleteObject(key)) {
+                failedKeys.add(key);
+            }
+        }
+        return failedKeys;
+    }
+
 }
+

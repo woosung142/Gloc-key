@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 @Builder
 @Getter
-@Setter
 @Entity
 @AllArgsConstructor // 전체 필드 생성자 추가
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -24,6 +23,9 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
     private String password;
 
     private String role;
@@ -35,4 +37,10 @@ public class User {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+
+    public void changePassword(String password) {
+        this.password = password;
+    }
 }
+

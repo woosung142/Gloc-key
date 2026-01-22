@@ -165,14 +165,14 @@ public class ImageService {
 
             if (!descendants.isEmpty()) {
                 Image newRoot = descendants.get(0);
-                newRoot.setParentImage(null);
-                newRoot.setRootImageId(newRoot.getId());
+                newRoot.changeParentImage(null);
+                newRoot.changeRootImageId(newRoot.getId());
 
                 // 삭제될 targetImage를 부모로 가졌던 자식들을 newRoot에게 연결
                 List<Image> directChildren = imageRepository.findAllByParentImage(targetImage);
                 for (Image child : directChildren) {
                     if (!child.equals(newRoot)) { // newRoot는 이미 null 처리됨
-                        child.setParentImage(newRoot);
+                        child.changeParentImage(newRoot);
                     }
                 }
 
@@ -186,7 +186,7 @@ public class ImageService {
             if (!children.isEmpty()) {
                 for (Image child : children) {
                     // 할아버지에게 입양
-                    child.setParentImage(parent);
+                    child.changeParentImage(parent);
                 }
             }
         }
