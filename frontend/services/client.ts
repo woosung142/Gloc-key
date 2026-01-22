@@ -16,6 +16,7 @@ const reissueApi = axios.create({
 const noAuthPaths = ["/login", "/signup", "/reissue", "/logout"];
 
 api.interceptors.request.use((config) => {
+
   // 현재 요청 URL이 noAuthPaths에 포함되어 있는지 확인
   const isNoAuthPath = noAuthPaths.some((path) => config.url?.endsWith(path));
 
@@ -38,6 +39,10 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const originalRequest = error.config;
+
+    if (originalRequest.url === '/login' || originalRequest.url === '/signup') {
+      return Promise.reject(error);
+    }
 
     // 401 에러이고 재시도한 적이 없는 요청일 때
     if (error.response?.status === 401 && !originalRequest._retry) {

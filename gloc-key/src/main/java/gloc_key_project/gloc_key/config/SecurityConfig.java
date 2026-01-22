@@ -67,7 +67,7 @@ public class SecurityConfig {
 
                         // 허용 메서드
                         configuration.setAllowedMethods(List.of(
-                                "GET", "POST", "PUT", "DELETE", "OPTIONS"
+                                "GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"
                         ));
 
                         // 쿠키 허용 (refreshToken)

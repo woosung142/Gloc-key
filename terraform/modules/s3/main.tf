@@ -27,7 +27,8 @@ resource "aws_s3_bucket_cors_configuration" "image_bucket_cors" {
     allowed_methods = [
       "GET",
       "PUT",
-      "HEAD"
+      "HEAD",
+      "DELETE"
     ]
     allowed_origins = [
       "http://localhost:5173",

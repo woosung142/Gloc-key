@@ -53,7 +53,7 @@ class AuthServiceTest {
     @Test
     void 회원가입_성공() {
         //given
-        SignupRequest signupRequest = new SignupRequest("junseop", "password");
+        SignupRequest signupRequest = new SignupRequest("junseop", "email@gmail.com", "password");
 
         when(userRepository.existsByUsername("junseop")).thenReturn(false);
         when(bCryptPasswordEncoder.encode("password")).thenReturn("encodedPw");
@@ -71,7 +71,7 @@ class AuthServiceTest {
     @Test
     void username이_없으면_회원가입_실패() {
         // given
-        SignupRequest request = new SignupRequest("", "password");
+        SignupRequest request = new SignupRequest("", "email@gmail.com", "password");
 
         // then
         assertThrows(IllegalArgumentException.class, () -> {
@@ -82,7 +82,7 @@ class AuthServiceTest {
     @Test
     void password가_없으면_회원가입_실패() {
         // given
-        SignupRequest request = new SignupRequest("username", "");
+        SignupRequest request = new SignupRequest("username", "email@gmail.com", "");
 
         // then
         assertThrows(IllegalArgumentException.class, () -> {
@@ -93,7 +93,7 @@ class AuthServiceTest {
     @Test
     void username이_중복되면_회원가입_실패() {
         // given
-        SignupRequest request = new SignupRequest("junseop", "password");
+        SignupRequest request = new SignupRequest("junseop", "email@gmail.com", "password");
 
         when(userRepository.existsByUsername("junseop")).thenReturn(true);
 

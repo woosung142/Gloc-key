@@ -1,13 +1,11 @@
 package gloc_key_project.gloc_key.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
-import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -15,8 +13,11 @@ import software.amazon.awssdk.services.s3.presigner.model.PresignedPutObjectRequ
 import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class S3Service {
     private final S3Client s3Client;
@@ -80,4 +81,34 @@ public class S3Service {
             return false;
         }
     }
+
+    public boolean deleteObject(String s3Key) {
+        try {
+            s3Client.deleteObject(DeleteObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(s3Key)
+                    .build());
+            return true;
+        } catch (S3Exception e) {
+            // 로그를 남겨 어떤 키에서 실패했는지 기록 (추후 수동 복구용)
+            log.error("S3 파일 삭제 실패: {} - 사유: {}", s3Key, e.awsErrorDetails().errorMessage());
+            return false;
+        } catch (Exception e) {
+            log.error("S3 삭제 중 예상치 못한 오류 발생: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    public List<String> deleteObjects(List<String> s3Keys) {
+        List<String> failedKeys = new ArrayList<>();
+
+        for (String key : s3Keys) {
+            if (!deleteObject(key)) {
+                failedKeys.add(key);
+            }
+        }
+        return failedKeys;
+    }
+
 }
+

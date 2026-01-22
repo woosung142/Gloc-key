@@ -3,10 +3,9 @@ package gloc_key_project.gloc_key.dto;
 import lombok.*;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class SignupRequest {
-    private String username;
-    private String email;
-    private String password;
+public class ChangePasswordResponse {
+    private String message;
 }

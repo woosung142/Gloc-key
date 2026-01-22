@@ -8,6 +8,9 @@ import gloc_key_project.gloc_key.dto.ImageStatusResponse;
 import gloc_key_project.gloc_key.entity.Image;
 import gloc_key_project.gloc_key.entity.User;
 import gloc_key_project.gloc_key.repository.ImageRepository;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -19,6 +22,7 @@ import org.springframework.data.redis.core.HashOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,6 +53,18 @@ class ImageServiceTest {
 
     @InjectMocks
     ImageService imageService;
+
+    @BeforeEach
+    void setUp() {
+        // 트랜잭션 동기화 초기화 (에러 방지)
+        TransactionSynchronizationManager.initSynchronization();
+    }
+
+    @AfterEach
+    void tearDown() {
+        // 테스트 종료 후 정리
+        TransactionSynchronizationManager.clearSynchronization();
+    }
 
 
     /*
@@ -428,5 +444,141 @@ class ImageServiceTest {
     }
 
 
+    /*
+    ---------------
+    이미지 삭제 및 계보 관리 테스트
+    ---------------
+    */
 
+    @Test
+    @DisplayName("이미지 삭제 - 권한이 없는 사용자가 삭제를 시도하면 AccessDeniedException이 발생한다")
+    void deleteImage_AccessDenied() {
+        // given
+        Long targetImageId = 1L;
+        Long unauthorizedUserId = 999L; // 이미지 소유자가 아닌 ID
+
+        User owner = User.builder().id(1L).build();
+        Image targetImage = Image.builder()
+                .id(targetImageId)
+                .user(owner)
+                .build();
+
+        when(imageRepository.findById(targetImageId)).thenReturn(Optional.of(targetImage));
+
+        // when & then
+        assertThrows(AccessDeniedException.class, () ->
+                imageService.deleteImage(targetImageId, unauthorizedUserId)
+        );
+    }
+
+    @Test
+    @DisplayName("이미지 삭제 - 원본(Root) 삭제 시 차순위 자식이 새로운 Root로 승격되고 계보가 유지된다")
+    void deleteImage_RootPromotion() {
+        // given
+        Long rootId = 1L;
+        Long userId = 1L;
+        User user = User.builder().id(userId).build();
+
+        // 원본 이미지
+        Image rootImage = Image.builder().id(rootId).user(user).rootImageId(rootId).s3Key("key1").build();
+
+        // 승격될 차순위 자식
+        Image newRootCandidate = Image.builder().id(2L).user(user).rootImageId(rootId).parentImage(rootImage).build();
+
+        // 입양될 나머지 자식
+        Image childToAdopt = Image.builder().id(3L).user(user).rootImageId(rootId).parentImage(rootImage).build();
+
+        when(imageRepository.findById(rootId)).thenReturn(Optional.of(rootImage));
+
+        // 나를 제외한 모든 후손 조회 (생성일 순)
+        when(imageRepository.findAllByRootImageIdOrderByCreatedAtAsc(rootId))
+                .thenReturn(List.of(rootImage, newRootCandidate, childToAdopt));
+
+        // 삭제될 원본의 직계 자식들 조회
+        when(imageRepository.findAllByParentImage(rootImage))
+                .thenReturn(List.of(newRootCandidate, childToAdopt));
+
+        // when
+        imageService.deleteImage(rootId, userId);
+
+        // then
+        // 1. 차순위 자식이 새로운 루트가 됨
+        assertNull(newRootCandidate.getParentImage());
+        assertEquals(2L, newRootCandidate.getRootImageId());
+
+        // 2. 나머지 자식이 새로운 루트에게 입양됨
+        assertEquals(newRootCandidate, childToAdopt.getParentImage());
+
+        // 3. 벌크 업데이트 및 삭제 메서드 호출 확인
+        verify(imageRepository).updateRootImageId(rootId, 2L);
+        verify(imageRepository).delete(rootImage);
+    }
+
+    @Test
+    @DisplayName("이미지 삭제 - 중간 편집본 삭제 시 자식들이 조부모 이미지에게 입양된다")
+    void deleteImage_IntermediateAdoption() {
+        // given
+        Long userId = 1L;
+        User user = User.builder().id(userId).build();
+
+        Image grandParent = Image.builder().id(10L).user(user).rootImageId(10L).build();
+        Image targetImage = Image.builder().id(20L).user(user).rootImageId(10L).parentImage(grandParent).s3Key("key20").build();
+        Image childImage = Image.builder().id(30L).user(user).rootImageId(10L).parentImage(targetImage).build();
+
+        when(imageRepository.findById(20L)).thenReturn(Optional.of(targetImage));
+        when(imageRepository.findAllByParentImage(targetImage)).thenReturn(List.of(childImage));
+
+        // when
+        imageService.deleteImage(20L, userId);
+
+        // then
+        // 자식의 부모가 조부모로 변경됨 (입양)
+        assertEquals(grandParent, childImage.getParentImage());
+        verify(imageRepository).delete(targetImage);
+    }
+
+
+    @Test
+    @DisplayName("이미지 삭제 - 자식이 없는 원본 삭제 시 아무런 승격 없이 본인만 삭제된다")
+    void deleteImage_RootWithoutChildren() {
+        // given
+        Long userId = 1L;
+        User user = User.builder().id(userId).build();
+        Long rootId = 1L;
+        Image rootImage = Image.builder().id(rootId).user(user).rootImageId(rootId).s3Key("key1").build();
+
+        when(imageRepository.findById(rootId)).thenReturn(Optional.of(rootImage));
+        // 나를 제외한 후손이 없음
+        when(imageRepository.findAllByRootImageIdOrderByCreatedAtAsc(rootId)).thenReturn(List.of(rootImage));
+
+        // when
+        imageService.deleteImage(rootId, 1L);
+
+        // then
+        verify(imageRepository, never()).updateRootImageId(any(), any());
+        verify(imageRepository).delete(rootImage);
+    }
+
+    @Test
+    @DisplayName("이미지 삭제 - 원본 삭제 시 수많은 후손의 rootId가 한 번의 쿼리로 변경되는지 확인")
+    void deleteImage_RootWithManyDescendants() {
+        // given
+
+        Long userId = 1L;
+        User user = User.builder().id(userId).build();
+        Long oldRootId = 1L;
+        Image root = Image.builder().id(oldRootId).user(user).rootImageId(oldRootId).s3Key("k").build();
+        Image newRoot = Image.builder().id(2L).user(user).rootImageId(oldRootId).build();
+
+        when(imageRepository.findById(oldRootId)).thenReturn(Optional.of(root));
+        when(imageRepository.findAllByRootImageIdOrderByCreatedAtAsc(oldRootId))
+                .thenReturn(List.of(root, newRoot, mock(Image.class), mock(Image.class))); // 후손들
+
+        // when
+        imageService.deleteImage(oldRootId, 1L);
+
+        // then
+        // 성능 최적화의 핵심인 벌크 쿼리가 단 1번, 올바른 ID들로 호출되었는가?
+        verify(imageRepository, times(1)).updateRootImageId(oldRootId, 2L);
+    }
 }

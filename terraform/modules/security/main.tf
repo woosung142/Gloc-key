@@ -239,6 +239,7 @@ resource "aws_iam_policy" "worker_s3_access" {
         Action = [
           "s3:GetObject",   # pre-signed URL로 읽기 권한을 줄 때 필요
           "s3:PutObject",   # 이미지를 업로드해야 한다면 필요
+          "s3:DeleteObject",# 삭제 권한
           "s3:ListBucket"   # 버킷 내부 확인용
         ]
         Resource = [

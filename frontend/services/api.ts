@@ -14,21 +14,39 @@ export interface ImageGenerateResponse {
 
 export const imageService = {
   // 1. 내역 조회 (백엔드 ImageController.getHistory 대응)
-  getHistory: async (): Promise<UserImage[]> => {
-    // 백엔드는 Page<ImageHistoryResponse>를 반환하므로 .content를 가져옵니다.
-    const response = await api.get('/images/history?page=0&size=50');
-    // const response = await api.get('/images/history');
+  getHistory: async (page = 0, size = 50): Promise<UserImage[]> => {
+    const response = await api.get(`/images/history?page=${page}&size=${size}`);
     const data = response.data;
     
-    // 데이터 필드 매핑 (백엔드 DTO -> 프론트엔드 타입)
     return (data.content || []).map((img: any) => ({
-      id: String(img.imageId), // 백엔드는 imageId 사용
-      title: img.prompt || "제목 없음",
+      id: String(img.imageId),
+      title: img.prompt || "원본 자료",
       originalUrl: img.imageUrl,
       createdAt: img.createdAt,
-      isEdit: img.imageUrl.includes('/edits/'), // URL 경로로 편집본 여부 판별
+      rootImageId: String(img.imageId),
+      isEdit: false,
+      hasEdited: img.hasEdited
     }));
   },
+
+  getEditImageHistory: async (rootImageId: string): Promise<UserImage[]> => {
+    const response = await api.get(`/images/history/${rootImageId}/edits`);
+    const data = response.data || []; // List<EditImageHistoryResponse>
+
+    return data.map((img: any, idx: number) => ({
+      id: String(img.imageId),
+      title: idx === 0 ? "원본" : "편집된 자료",
+      originalUrl: img.imageUrl,
+      createdAt: img.createdAt,
+      parentImageId:
+        idx === 0 ? undefined : img.parentImageId
+          ? String(img.parentImageId)
+          : undefined,
+      rootImageId,
+      isEdit: idx !== 0
+    }));
+  },
+
 
   // 2. 이미지 생성 (백엔드 ImageController.generateImage 대응)
   generateEduImage: async (prompt: string, options: GenerateOptions): Promise<ImageGenerateResponse> => {
