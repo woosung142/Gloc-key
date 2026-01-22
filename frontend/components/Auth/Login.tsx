@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { authService } from '../../services/auth';
 import { Sparkles } from 'lucide-react';
+import { AlertType } from '../Common/CustomAlert';
 
 interface Props {
   onSuccess: (user: any, token: string) => void;
   onSwitchToSignup: () => void;
+  onAlert: (type: AlertType, title: string, message: string) => void;
 }
 
-const Login: React.FC<Props> = ({ onSuccess, onSwitchToSignup }) => {
+const Login: React.FC<Props> = ({ onSuccess, onSwitchToSignup, onAlert }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -28,7 +30,11 @@ const Login: React.FC<Props> = ({ onSuccess, onSwitchToSignup }) => {
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      alert(error.response?.data?.message || '로그인에 실패했습니다. 계정 정보를 확인해주세요.');
+      onAlert(
+        'error',
+        '로그인 실패', // 타이틀을 '가입 실패'에서 '로그인 실패'로 수정하는 것이 좋습니다.
+        error.response?.data?.message ||'로그인에 실패했습니다.\n계정 정보를 확인해주세요.'
+      );
     } finally {
       setLoading(false);
     }

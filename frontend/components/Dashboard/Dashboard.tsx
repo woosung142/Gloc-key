@@ -10,13 +10,23 @@ import { HistoryPanel } from './components/HistoryPanel';
 import { DeleteDialog } from './components/DeleteDialog';
 import { LoadingOverlay } from './components/LoadingOverlay';
 import { Footer } from './components/Footer';
+import { AlertType } from '../Common/CustomAlert';
 
 interface Props {
   onLogout: () => void;
   user: User | null;
+  onNavigateToMyPage: () => void;
+  onAlert: (
+    type: AlertType, 
+    title: string, 
+    message: string, 
+    onConfirm?: () => void, 
+    cancelLabel?: string, 
+    confirmLabel?: string
+  ) => void;
 }
 
-const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
+const Dashboard: React.FC<Props> = ({ onLogout, user, onNavigateToMyPage, onAlert }) => {
   const dashboard = useDashboard();
 
   useEffect(() => {
@@ -40,9 +50,16 @@ const Dashboard: React.FC<Props> = ({ onLogout, user }) => {
     return () => clearInterval(interval);
   }, [dashboard.isGenerating]);
 
+
+
   return (
     <div className="min-h-screen flex flex-col selection:bg-[#B59458]/20 selection:text-[#1E293B]">
-      <Navbar user={user} onLogout={onLogout} />
+      <Navbar 
+        user={user} 
+        onLogout={onLogout} 
+        onProfileClick={onNavigateToMyPage} // Navbar로 전달
+        onAlert={onAlert}
+      />
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-12 md:py-20 space-y-32">
         <GeneratorSection
