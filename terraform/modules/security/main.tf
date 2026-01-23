@@ -102,7 +102,7 @@ resource "aws_iam_role" "ec2_role" {
 
 resource "aws_iam_role_policy" "eip_stealing_policy" { # EC2 인스턴스가 Elastic IP를 연결/해제할 수 있는 권한 부여
   name = "eip-stealing-policy"
-  role = aws_iam_role.ec2_role.id
+  role = aws_iam_role.worker_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"

@@ -48,9 +48,6 @@ module "master" {
   sg_id            = module.security.sg_id
   iam_profile_name = module.security.instance_profile_name
 
-  # 뺏어올 EIP 정보 전달
-  eip_allocation_id = aws_eip.k3s_ip.allocation_id
-
   # Tailscale 키 전달
   tailscale_auth_key = var.tailscale_key
 
@@ -74,6 +71,9 @@ module "worker" {
   # Tailscale 키 전달
   tailscale_auth_key = var.tailscale_key
   ssm_token_path     = "/gloc-key/k3s/node-token"
+
+  # 뺏어올 EIP 정보 전달
+  eip_allocation_id = aws_eip.k3s_ip.allocation_id
 }
 
 # 3. RDS 모듈 추가
