@@ -99,6 +99,11 @@ nodeExporter:
 
 prometheus:
   prometheusSpec:
+    alertingEndpoints:
+      - namespace: monitoring
+        name: kube-prometheus-stack-alertmanager
+        port: http-web
+        apiVersion: v2
     enableFeatures:
       - remote-write-receiver
     enableRemoteWriteReceiver: true
