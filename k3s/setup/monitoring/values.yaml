@@ -28,6 +28,57 @@ kube-state-metrics: #(0.49m / 24.0) cpu/memory
 
 alertmanager: #(0.23m / 19.8) cpu/memory
   enabled: true
+  config:
+    global:
+      resolve_timeout: 5m
+      # 1. [추가] 슬랙 웹훅 URL을 여기에 넣으세요
+      slack_api_url: "https://hooks.slack.com/services/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"
+
+    # (이 부분은 시끄러운 알람을 막아주는 좋은 규칙이니 그대로 둡니다)
+    inhibit_rules:
+      - source_matchers: [ 'severity = critical' ]
+        target_matchers: [ 'severity =~ warning|info' ]
+        equal: [ 'namespace', 'alertname' ]
+      - source_matchers: [ 'severity = warning' ]
+        target_matchers: [ 'severity = info' ]
+        equal: [ 'namespace', 'alertname' ]
+      - source_matchers: [ 'alertname = InfoInhibitor' ]
+        target_matchers: [ 'severity = info' ]
+        equal: [ 'namespace' ]
+
+    route:
+      group_by: ['namespace']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+      
+      # 2. [변경] 기본 수신자를 'null' -> 'slack-notifications'로 변경
+      receiver: 'slack-notifications'
+      
+      routes:
+      # 3. [테스트용 변경] 원래 Watchdog을 null로 버리는데, 
+      # 테스트를 위해 잠시 주석 처리하거나 receiver를 slack으로 바꿉니다.
+      - matchers:
+          - alertname = "Watchdog"
+        receiver: 'slack-notifications' # 테스트 끝나면 'null'로 바꾸세요
+
+    receivers:
+    - name: 'null'
+    
+    # 4. [추가] 슬랙 수신자 상세 설정 정의
+    - name: 'slack-notifications'
+      slack_configs:
+      - channel: '#error' # 채널명 확인!
+        send_resolved: true
+        title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
+        text: >-
+          *Description:* {{ .CommonAnnotations.description }}
+
+          *Severity:* {{ .CommonLabels.severity }}
+          
+    templates:
+    - '/etc/alertmanager/config/*.tmpl'
+
   alertmanagerSpec:
     nodeSelector:
       role: worker
