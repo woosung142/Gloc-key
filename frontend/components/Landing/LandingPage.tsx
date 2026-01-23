@@ -130,9 +130,9 @@ const LandingPage: React.FC<Props> = ({ onEnter, onSignup }) => {
       <div className="absolute inset-0 -z-10 bg-[#020617]/40 pointer-events-none" />
       
         <div className="max-w-7xl mx-auto text-center space-y-16 relative z-10">
-          <div className="reveal inline-flex items-center gap-3 px-6 py-2.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-xl">
-            <Sparkles size={14} className="text-[#B59458] animate-pulse" />
-            <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.4em]">K-EDU VISION v3.0</span>
+          <div className="reveal inline-flex items-center gap-4 px-6 py-2.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-2xl">
+            <div className="w-2 h-2 bg-[#B59458] rounded-full animate-ping"></div>
+            <span className="text-[10px] font-black text-slate-300 uppercase tracking-[0.5em]">K-EDU VISION</span>
           </div>
 
           <h1 className="reveal delay-100 font-serif-ko text-6xl md:text-[120px] font-black text-white leading-[0.9] tracking-[-0.05em]">
