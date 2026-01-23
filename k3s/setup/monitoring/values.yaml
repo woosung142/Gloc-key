@@ -32,7 +32,7 @@ alertmanager: #(0.23m / 19.8) cpu/memory
     global:
       resolve_timeout: 5m
       # 1. [추가] 슬랙 웹훅 URL을 여기에 넣으세요
-      slack_api_url: "https://hooks.slack.com/services/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"
+      slack_api_url: "https://hooks.slack.com/services/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"
 
     # (이 부분은 시끄러운 알람을 막아주는 좋은 규칙이니 그대로 둡니다)
     inhibit_rules:
