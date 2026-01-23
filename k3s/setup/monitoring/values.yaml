@@ -80,6 +80,8 @@ alertmanager: #(0.23m / 19.8) cpu/memory
     - '/etc/alertmanager/config/*.tmpl'
 
   alertmanagerSpec:
+    secrets:
+      - alertmanager-slack-secret
     nodeSelector:
       role: worker
     resources:
