@@ -59,12 +59,12 @@ const LandingPage: React.FC<Props> = ({ onEnter, onSignup }) => {
   }, []);
 
   const galleryImages = [
-    'https://images.unsplash.com/photo-1599408162172-ac8879684347?auto=format&fit=crop&w=800&q=80',
     'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1616428313411-b06880026a7f?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1582233228802-632411bd4635?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1608649159574-1c973cc6708b?auto=format&fit=crop&w=800&q=80',
-    'https://images.unsplash.com/photo-1528642463367-1bc90a8a61a0?auto=format&fit=crop&w=800&q=80'
+    'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80',
+    'https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=800&q=80'
   ];
 
   return (
@@ -106,6 +106,29 @@ const LandingPage: React.FC<Props> = ({ onEnter, onSignup }) => {
 
       {/* Hero Section: Interactive Spotlight */}
       <section ref={heroRef} className="glow-bg relative pt-60 pb-40 px-6 min-h-screen flex items-center justify-center overflow-hidden">
+        {/* 레이어 1: 전체 베이스 배경 (매우 어둡고 흑백 느낌) */}
+        <div className="absolute inset-0 -z-30 pointer-events-none">
+          <div 
+            className="absolute inset-0 bg-cover bg-center"
+            style={{ 
+              backgroundImage: `url('https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=1920&q=80')`,
+              filter: 'brightness(0.15) grayscale(0.8) blur(2px)', // 거의 안 보이게 설정
+            }}
+          />
+        </div>
+
+      {/* 2. 마우스 위치에만 보이는 밝은 이미지 레이어 (Spotlight Effect) */}
+      <div 
+        className="spotlight-image absolute inset-0 -z-20 pointer-events-none"
+        style={{ 
+          backgroundImage: `url('https://images.unsplash.com/photo-1548115184-bc6544d06a58?auto=format&fit=crop&w=1920&q=80')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      />
+        
+      <div className="absolute inset-0 -z-10 bg-[#020617]/40 pointer-events-none" />
+      
         <div className="max-w-7xl mx-auto text-center space-y-16 relative z-10">
           <div className="reveal inline-flex items-center gap-3 px-6 py-2.5 bg-white/5 border border-white/10 rounded-full backdrop-blur-xl">
             <Sparkles size={14} className="text-[#B59458] animate-pulse" />
@@ -363,9 +386,10 @@ const LandingPage: React.FC<Props> = ({ onEnter, onSignup }) => {
         }
 
         .text-gradient-gold {
-          background: linear-gradient(to bottom, #FDFCF9 0%, #B59458 100%);
+          background: linear-gradient(to bottom, #FFFFFF 0%, #E6C894 50%, #B59458 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
+          filter: drop-shadow(0 0 30px rgba(0, 0, 0, 0.8));
         }
 
         /* Reveal Animation */
@@ -397,29 +421,66 @@ const LandingPage: React.FC<Props> = ({ onEnter, onSignup }) => {
           100% { transform: translateX(-50%); }
         }
 
-        /* Interactive Spotlight */
-        .glow-bg::before {
-          content: '';
+        /* --- Spotlight Effect Core --- */
+
+        .glow-bg {
+          --x: 50%;
+          --y: 50%;
+          position: relative;
+          background-color: #020617; /* 배경색 명시 */
+        }
+
+        /* 베이스 배경 (가장 뒤) */
+        .bg-base-layer {
           position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(
-            800px circle at var(--x, 50%) var(--y, 50%),
-            rgba(181, 148, 88, 0.08),
-            transparent 40%
-          );
-          z-index: 1;
+          inset: 0;
+          z-index: 0;
+          background-size: cover;
+          background-position: center;
+          filter: brightness(0.15) grayscale(0.8);
           pointer-events: none;
         }
 
-        .glass-card {
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.05);
+        /* 스포트라이트 레이어 (가장 앞의 이미지) */
+        .spotlight-image {
+          position: absolute;
+          inset: 0;
+          z-index: 10; /* 텍스트(z-10)와 겹치지 않게 주의하거나 텍스트를 더 높임 */
+          background-size: cover;
+          background-position: center;
+          pointer-events: none;
+          
+          /* 마스크 설정 */
+          mask-image: radial-gradient(
+            300px circle at var(--x) var(--y),
+            black 0%,
+            rgba(0, 0, 0, 0.8) 25%,
+            transparent 100%
+          );
+          -webkit-mask-image: radial-gradient(
+            300px circle at var(--x) var(--y),
+            black 0%,
+            rgba(0, 0, 0, 0.8) 25%,
+            transparent 100%
+          );
+          filter: brightness(1.3) contrast(1.1);
         }
-      `}</style>
+
+        /* 금빛 광원 효과 - 이미지보다 위에 있어야 함 */
+        .glow-bg::before {
+          content: '';
+          position: absolute;
+          inset: 0;
+          z-index: 20; 
+          background: radial-gradient(
+            500px circle at var(--x) var(--y),
+            rgba(181, 148, 88, 0.25) 0%,
+            transparent 70%
+          );
+          pointer-events: none;
+          mix-blend-mode: screen;
+        }
+`}</style>
     </div>
   );
 };
