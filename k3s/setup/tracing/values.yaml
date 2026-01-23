@@ -329,9 +329,10 @@ service:
   targetPort: ""
 
 serviceMonitor:
-  enabled: false
-  interval: ""
-  additionalLabels: {}
+  enabled: true
+  interval: "30s"
+  additionalLabels:
+    release: kube-prometheus-stack
   annotations: {}
   # scrapeTimeout: 10s
 
