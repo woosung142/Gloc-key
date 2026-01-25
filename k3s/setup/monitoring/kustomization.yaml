@@ -4,10 +4,10 @@ namespace: monitoring
 
 resources:
   # dashboard
-  - dashboard/node.yaml
-  - dashboard/redis.yaml
-  - dashboard/tempo.yaml
-  - dashboard/backend.yaml
+  - dashboard/dash-node.yaml
+  - dashboard/dash-redis.yaml
+  - dashboard/dash-tempo.yaml
+  - dashboard/dash-backend.yaml
   # alert rules
   - alert/backend-alert-rule.yaml
 
