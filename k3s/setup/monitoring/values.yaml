@@ -60,7 +60,7 @@ alertmanager: #(0.23m / 19.8) cpu/memory
           - alertname = "BackendHighErrorRate"
         receiver: 'slack-notifications'
         group_wait: 10s
-        repeat_interval: 1h
+        repeat_interval: 1m
 
     receivers:
     - name: 'null'
