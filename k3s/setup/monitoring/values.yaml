@@ -71,11 +71,11 @@ alertmanager: #(0.23m / 19.8) cpu/memory
         send_resolved: true
         title: '[{{ .Status | toUpper }}] {{ .CommonLabels.alertname }}'
         text: >-
-          *Description:* {{ .CommonAnnotations.description }}
+          *[Description]:* {{ .CommonAnnotations.description }}
 
-          *[제목]:* {{ .CommonAnnotations.summary }}
+          *[Summary]:* {{ .CommonAnnotations.summary }}
 
-          *Severity:* {{ .CommonLabels.severity }}
+          *[Severity]:* {{ .CommonLabels.severity }}
           
     templates:
     - '/etc/alertmanager/config/*.tmpl'

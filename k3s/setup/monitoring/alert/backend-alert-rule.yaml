@@ -2,19 +2,18 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: backend-error-alert
-  namespace: monitoring  # 프로메테우스가 설치된 네임스페이스 (보통 monitoring)
+  namespace: monitoring
   labels:
-    release: kube-prometheus-stack # ⚠️ 중요: 프로메테우스가 "내 룰이다"라고 인식할 라벨 (helm list로 확인한 릴리즈 이름)
+    release: kube-prometheus-stack
 spec:
   groups:
   - name: backend.rules
     rules:
     - alert: BackendHighErrorRate
-      # 👇 여기가 조건식입니다. (1분 동안 500 에러가 발생하면 알람)
       expr: sum by (http_response_status_code, http_request_method, http_route) (rate(http_server_request_duration_seconds_count{http_response_status_code=~"4.*"}[5m])) > 0
-      for: 1m  # 이 상태가 1분 이상 지속되면 알람 발송 (일시적 튐 방지)
+      for: 1m
       labels:
-        severity: critical # 심각도 설정
+        severity: critical
       annotations:
         summary: "{{ $labels.http_request_method }} 요청 오류 발생"
         description: "경로: {{ $labels.http_route }} (코드: {{ $labels.http_response_status_code }})"
