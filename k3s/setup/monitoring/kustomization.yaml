@@ -7,7 +7,7 @@ resources:
   - dashboard/dash-node.yaml
   - dashboard/dash-redis.yaml
   - dashboard/dash-tempo.yaml
-  - dashboard/dash-backend.yaml
+  - dashboard/dash-back.yaml
   # alert rules
   - alert/backend-alert-rule.yaml
 
