@@ -73,7 +73,7 @@ alertmanager: #(0.23m / 19.8) cpu/memory
         text: >-
           *Description:* {{ .CommonAnnotations.description }}
 
-          [제목] {{ .CommonAnnotations.summary }}
+          *[제목]:* {{ .CommonAnnotations.summary }}
 
           *Severity:* {{ .CommonLabels.severity }}
           
