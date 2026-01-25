@@ -143,16 +143,16 @@ tempo:
   # the receives all come from the OpenTelemetry collector.  more configuration information can
   # be found there: https://github.com/open-telemetry/opentelemetry-collector/tree/master/receiver
   receivers:
-    jaeger:
-      protocols:
-        grpc:
-          endpoint: 0.0.0.0:14250
-        thrift_binary:
-          endpoint: 0.0.0.0:6832
-        thrift_compact:
-          endpoint: 0.0.0.0:6831
-        thrift_http:
-          endpoint: 0.0.0.0:14268
+    # jaeger:
+    #   protocols:
+    #     grpc:
+    #       endpoint: 0.0.0.0:14250
+    #     thrift_binary:
+    #       endpoint: 0.0.0.0:6832
+    #     thrift_compact:
+    #       endpoint: 0.0.0.0:6831
+    #     thrift_http:
+    #       endpoint: 0.0.0.0:14268
     opencensus:
     otlp:
       protocols:
