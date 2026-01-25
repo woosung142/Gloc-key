@@ -3,11 +3,11 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
-  # dashboards
-  - dashboards/node.yaml
-  - dashboards/redis.yaml
-  - dashboards/tempo.yaml
-  - dashboards/backend.yaml
+  # dashboard
+  - dashboard/node.yaml
+  - dashboard/redis.yaml
+  - dashboard/tempo.yaml
+  - dashboard/backend.yaml
   # alert rules
   - alert/backend-alert-rule.yaml
 
