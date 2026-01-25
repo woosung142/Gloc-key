@@ -8,4 +8,5 @@ helmCharts:
     version: 1.24.1
     releaseName: tempo
     valuesFile: values.yaml
+    namespace: tracing
     includeCRDs: true
