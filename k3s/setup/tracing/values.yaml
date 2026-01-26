@@ -116,19 +116,19 @@ tempo:
     httpGet:
       path: /ready
       port: 3200
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
+    initialDelaySeconds: 60 #30
+    periodSeconds:  10
+    timeoutSeconds: 10 #5
+    failureThreshold: 6 #3
     successThreshold: 1
   readinessProbe:
     httpGet:
       path: /ready
       port: 3200
-    initialDelaySeconds: 20
+    initialDelaySeconds: 60 #20
     periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
+    timeoutSeconds: 10 #5
+    failureThreshold: 6 #3
     successThreshold: 1
   storage:
     trace:
