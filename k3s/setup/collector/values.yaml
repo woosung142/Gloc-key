@@ -1,4 +1,11 @@
 alloy:
+  resources:
+    requests:
+      cpu: 20m
+      memory: 100Mi
+    limits:
+      cpu: 40m
+      memory: 150Mi
   configMap:
     create: true
     content: |
