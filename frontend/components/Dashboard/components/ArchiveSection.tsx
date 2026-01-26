@@ -1,6 +1,6 @@
 import React from 'react';
 import { UserImage } from '../../../types';
-import { Search, ListFilter, Filter, Check, ChevronDown, LayoutGrid } from 'lucide-react';
+import { Search, ListFilter, Filter, Check, ChevronDown, LayoutGrid, Library } from 'lucide-react';
 import { FILTER_OPTIONS, SORT_OPTIONS } from '../constants';
 import type { SortOption, FilterType } from '../hooks/useDashboard';
 import { ImageCard } from './ImageCard';
@@ -47,18 +47,37 @@ export const ArchiveSection: React.FC<ArchiveSectionProps> = ({
   onDownload,
   onViewLineage,
   onDelete
+  // <p className="text-sm font-bold text-slate-400">총 {images.length}개의 자료를 보관 중입니다</p>
 }) => {
   return (
     <section className="space-y-12">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
-        <div className="space-y-4">
-          <h3 className="font-serif-ko text-4xl font-black text-[#1E293B]">나의 서고</h3>
-          <div className="flex items-center gap-3">
-            <div className="h-1 w-12 bg-[#B59458] rounded-full"></div>
-            <p className="text-sm font-bold text-slate-400">총 {images.length}개의 자료를 보관 중입니다</p>
-          </div>
-        </div>
+    <div className="flex flex-col md:flex-row md:items-end justify-between gap-10">
+      <div className="grid grid-cols-[48px_1fr] gap-x-4">
+  {/* 아이콘 */}
+  <div className="w-12 h-12 bg-[#1E293B] text-[#B59458] flex items-center justify-center rounded-xl shadow-sm">
+    <Library size={24} strokeWidth={2} />
+  </div>
 
+  {/* 타이틀 영역 (아이콘 높이에 맞춤) */}
+  <div className="flex flex-col justify-center space-y-1">
+    <span className="text-[10px] font-black text-[#B59458] uppercase tracking-[0.3em]">
+      My Archive
+    </span>
+
+    <h2 className="font-serif-ko text-4xl font-black text-[#1E293B] leading-none">
+      나의 서고
+    </h2>
+  </div>
+
+  {/* 설명 영역 (아이콘 아래) */}
+  <div className="col-start-2 mt-2 flex items-center gap-3">
+    <div className="h-1 w-12 bg-[#B59458] rounded-full"></div>
+    <p className="text-sm font-bold text-slate-400">
+      총 {images.length}개의 자료를 보관 중입니다
+    </p>
+  </div>
+</div>
+      
         <div className="flex flex-wrap items-center gap-4">
           {/* 검색창 */}
           <div className="relative group/search">

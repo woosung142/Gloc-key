@@ -6,6 +6,7 @@ import Dashboard from './components/Dashboard/Dashboard';
 import { authService } from './services/auth';
 import MyPage from './components/MyPage/MyPage';
 import { CustomAlert, AlertType } from './components/Common/CustomAlert';
+import LandingPage from './components/Landing/LandingPage';
 
 const App: React.FC = () => {
   const savedUser = localStorage.getItem('visionary_user');
@@ -17,8 +18,8 @@ const App: React.FC = () => {
     isAuthenticated: !!localStorage.getItem('visionary_token'),
   });
 
-  const [view, setView] = useState<'login' | 'signup' | 'dashboard' | 'mypage'>(
-    localStorage.getItem('visionary_token') ? 'dashboard' : 'login'
+  const [view, setView] = useState<'landing' | 'login' | 'signup' | 'dashboard' | 'mypage'>(
+    localStorage.getItem('visionary_token') ? 'dashboard' : 'landing'
   );
 
   const [alertInfo, setAlertInfo] = useState<{
@@ -44,7 +45,7 @@ const App: React.FC = () => {
   const handleLogout = () => {
     authService.logout();
     setAuth({ user: null, token: null, isAuthenticated: false });
-    setView('login');
+    setView('landing');
   };
 
   const showAlert = (
@@ -62,6 +63,13 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen">
+      {view === 'landing' && (
+        <LandingPage 
+          onEnter={() => setView('login')} 
+          onSignup={() => setView('signup')} 
+        />
+      )}
+
       {view === 'login' && (
         <Login 
           onSuccess={handleAuthSuccess} 

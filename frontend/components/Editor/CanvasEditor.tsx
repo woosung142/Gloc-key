@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Image as KonvaImage, Transformer, Group, Text, Path } from 'react-konva';
 import { UserImage, KonvaElement } from '../../types';
 import { imageService } from '../../services/api';
+import { AlertType } from '../Common/CustomAlert';
 import { 
   Save, Trash2, RotateCw, Download, ArrowLeft, Palette, Sliders, 
   Layout, RefreshCcw, Repeat, Type, CheckCircle2, 
@@ -16,6 +17,14 @@ interface Props {
   lastPrompt?: string;
   onRegenerate: () => Promise<void>;
   onSave: () => void;
+   onAlert: (
+      type: AlertType, 
+      title: string, 
+      message: string, 
+      onConfirm?: () => void, 
+      cancelLabel?: string, 
+      confirmLabel?: string
+    ) => void;
 }
 
 const K_PALETTE = [
@@ -29,7 +38,7 @@ const K_PALETTE = [
   { name: '고운모래', color: '#F1EFE9' },
 ];
 
-const CanvasEditor: React.FC<Props> = ({ initialImageUrl, initialRecord, lastPrompt, onRegenerate, onSave }) => {
+const CanvasEditor: React.FC<Props> = ({ initialImageUrl, initialRecord, lastPrompt, onRegenerate, onSave, onAlert }) => {
   const [elements, setElements] = useState<KonvaElement[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [baseImage, setBaseImage] = useState<HTMLImageElement | null>(null);
@@ -133,9 +142,14 @@ const CanvasEditor: React.FC<Props> = ({ initialImageUrl, initialRecord, lastPro
     document.body.removeChild(link);
   };
 
+  const handleSaveAndExit = async () => {
+    setShowExitConfirm(false);   
+    await handleSave();          // 기존 저장 로직
+  };
+
   const handleSave = async () => {
     if (!initialRecord?.id) {
-      alert("원본 이미지 정보가 없습니다.");
+      onAlert('info', '원본 이미지 없음', '원본 이미지 정보가 존재하지 않습니다.');
       return;
     }
 
@@ -150,12 +164,15 @@ const CanvasEditor: React.FC<Props> = ({ initialImageUrl, initialRecord, lastPro
         parentId: initialRecord.id,
         dataUrl: dataUrl
       });
-
-      alert("편집본이 서고에 저장되었습니다.");
       onSave(); // Dashboard의 fetchHistory 실행 및 에디터 닫기
     } catch (error) {
       console.error("저장 실패:", error);
-      alert("저장 중 오류가 발생했습니다.");
+      onAlert(
+        'error',
+        '저장 실패',
+        '이미지를 서고에 저장하는 중 문제가 발생했습니다. 다시 시도해주세요.'
+      );
+
     } finally {
       setIsSaving(false);
     }
@@ -379,7 +396,8 @@ const CanvasEditor: React.FC<Props> = ({ initialImageUrl, initialRecord, lastPro
               <AlertCircle size={40} />
             </div>
             <div className="space-y-3">
-              <h3 className="font-serif-ko text-3xl font-black text-[#1E293B]">저장되지 않은 변경사항</h3>
+              <h3 className="font-serif-ko text-3xl font-black text-[#1E293B]">저장되지 않은</h3>
+              <h3 className="font-serif-ko text-3xl font-black text-[#1E293B]">변경사항</h3>
               <p className="text-slate-400 font-medium leading-relaxed italic text-sm">
                 편집 중인 내용이 아직 저장되지 않았습니다.<br/>
                 저장하지 않고 편집기를 나가시겠습니까?
@@ -387,7 +405,7 @@ const CanvasEditor: React.FC<Props> = ({ initialImageUrl, initialRecord, lastPro
             </div>
             <div className="flex flex-col gap-3">
               <button 
-                onClick={handleSave} 
+                onClick={handleSaveAndExit} 
                 className="w-full py-5 bg-[#1E293B] hover:bg-black text-white rounded-2xl font-black text-xs uppercase tracking-widest transition-all shadow-xl"
               >
                 변경사항 저장 후 나가기

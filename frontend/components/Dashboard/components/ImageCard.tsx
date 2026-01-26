@@ -25,7 +25,7 @@ export const ImageCard: React.FC<ImageCardProps> = ({
   onDelete
 }) => {
   return (
-    <div className="group relative flex flex-col bg-white rounded-[40px] overflow-hidden border border-slate-100 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] transition-all duration-700">
+    <div className="group relative flex flex-col bg-white rounded-[24px] overflow-hidden border border-slate-100 hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] transition-all duration-700">
       {/* Badge */}
       <div className="absolute top-5 left-5 z-20">
         <div className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest backdrop-blur-md border ${
