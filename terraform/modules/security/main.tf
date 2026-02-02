@@ -102,7 +102,7 @@ resource "aws_iam_role" "ec2_role" {
 
 resource "aws_iam_role_policy" "eip_stealing_policy" { # EC2 인스턴스가 Elastic IP를 연결/해제할 수 있는 권한 부여
   name = "eip-stealing-policy"
-  role = aws_iam_role.ec2_role.id
+  role = aws_iam_role.worker_role.id
 
   policy = jsonencode({
     Version = "2012-10-17"
@@ -239,6 +239,7 @@ resource "aws_iam_policy" "worker_s3_access" {
         Action = [
           "s3:GetObject",   # pre-signed URL로 읽기 권한을 줄 때 필요
           "s3:PutObject",   # 이미지를 업로드해야 한다면 필요
+          "s3:DeleteObject",# 삭제 권한
           "s3:ListBucket"   # 버킷 내부 확인용
         ]
         Resource = [
@@ -360,4 +361,66 @@ resource "aws_security_group" "lambda_sg" {
   }
 
   tags = { Name = "gloc-key-lambda-sg" }
+}
+
+# Tempo S3 버킷 접근 정책 생성 (worker)
+resource "aws_iam_policy" "tempo_s3_policy" {
+  name        = "${var.tempo_bucket_name}-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:ListBucket",
+          "s3:GetBucketLocation"
+        ]
+        Resource = var.tempo_bucket_arn
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject",
+          "s3:GetObject",
+          "s3:DeleteObject"
+        ]
+        Resource = "${var.tempo_bucket_arn}/*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "tempo_attach" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.tempo_s3_policy.arn
+}
+
+# Loki S3 버킷 접근 정책 생성 (worker)
+resource "aws_iam_policy" "loki_s3_policy" {
+  name        = "${var.loki_bucket_name}-policy"
+
+  policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:ListBucket",
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject" 
+            ],
+            "Resource": [
+                "${var.loki_bucket_arn}",
+                "${var.loki_bucket_arn}/*"
+            ]
+        }
+    ]
+})
+}
+
+resource "aws_iam_role_policy_attachment" "loki_attach" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.loki_s3_policy.arn
 }

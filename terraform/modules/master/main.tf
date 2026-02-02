@@ -57,8 +57,3 @@ resource "aws_instance" "k3s_server" {
     root_app_manifest = file("${path.root}/../k3s/bootstrap/root.yaml")
   })
 }
-
-resource "aws_eip_association" "eip_attach" {
-  instance_id   = aws_instance.k3s_server.id
-  allocation_id = var.eip_allocation_id
-}

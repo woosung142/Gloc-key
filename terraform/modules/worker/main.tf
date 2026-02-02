@@ -61,6 +61,8 @@ resource "aws_launch_template" "worker_lt" {
     master_ip          = var.master_private_ip
     project_name       = var.project_name
     ssm_token_path     = "/${var.project_name}/k3s/node-token"
+    eip_allocation_id  = var.eip_allocation_id
+
   }))
 
   tag_specifications {
@@ -76,9 +78,10 @@ resource "aws_autoscaling_group" "worker_asg" {
   name                = "${var.project_name}-worker-asg"
   vpc_zone_identifier = var.subnet_ids
 
+  capacity_rebalance = true # 스팟 인스턴스 교체 시 용량 재조정 활성화
   desired_capacity = 1 # 워커 1대 유지
   min_size         = 1
-  max_size         = 1
+  max_size         = 2
 
   launch_template {
     id      = aws_launch_template.worker_lt.id

@@ -18,10 +18,14 @@ module "security" {
   # lambda_function_name = module.lambda.lambda_name
   # s3_arn = module.s3.s3_arn
   bucket_name = module.s3.bucket_name
+  tempo_bucket_name = module.s3.tempo_s3_bucket_name
+  loki_bucket_name = module.s3.loki_s3_bucket_name
 
   admin_ip = "1.241.176.242/32"
 
   lambda_sg_id = module.security.lambda_sg_id
+  tempo_bucket_arn = module.s3.tempo_s3_arn
+  loki_bucket_arn = module.s3.loki_s3_arn
 }
 # EC2가 뺏어올 고정 IP(EIP)를 미리 생성 (EC2와 별개로 존재해야 함)
 resource "aws_eip" "k3s_ip" {
@@ -43,9 +47,6 @@ module "master" {
   # 보안 그룹 및 권한 전달
   sg_id            = module.security.sg_id
   iam_profile_name = module.security.instance_profile_name
-
-  # 뺏어올 EIP 정보 전달
-  eip_allocation_id = aws_eip.k3s_ip.allocation_id
 
   # Tailscale 키 전달
   tailscale_auth_key = var.tailscale_key
@@ -70,6 +71,9 @@ module "worker" {
   # Tailscale 키 전달
   tailscale_auth_key = var.tailscale_key
   ssm_token_path     = "/gloc-key/k3s/node-token"
+
+  # 뺏어올 EIP 정보 전달
+  eip_allocation_id = aws_eip.k3s_ip.allocation_id
 }
 
 # 3. RDS 모듈 추가

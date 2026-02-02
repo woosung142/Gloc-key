@@ -71,14 +71,19 @@ public class JWTUtil {
 
     // 토큰 만료 확인
     public boolean isExpired(String token) {
-        Date exp = Jwts.parser()
-                .verifyWith(secretKey)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getExpiration();
+        try {
+            Date exp = Jwts.parser()
+                    .verifyWith(secretKey)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload()
+                    .getExpiration();
 
-        return exp.before(new Date());
+            return exp.before(new Date());
+        } catch (Exception e) {
+            // 파싱 중 예외 = 만료되었거나 잘못된 토큰
+            return true;
+        }
     }
 
 

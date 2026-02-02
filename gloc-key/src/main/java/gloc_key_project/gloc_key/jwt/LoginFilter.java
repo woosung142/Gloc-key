@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -70,6 +71,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // accessToken 15분
         String accessToken = jwtUtil.creatJwt("access",userId, username, role, 15 * 60 * 1000L);
+//        String accessToken = jwtUtil.creatJwt("access",userId, username, role, 5000L);
 
         // refreshToken 2주
         String refreshToken = jwtUtil.creatJwt("refresh", userId, username, role, 14 * 24 * 60 * 60 * 1000L);
@@ -85,10 +87,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         // accessToken 헤더에 추가
         response.setHeader("access", accessToken);
-        // refreshToken 쿠키에 추가
-        response.addCookie(createCookie("refresh", refreshToken));
+
+        ResponseCookie refreshCookie = ResponseCookie.from("refresh", refreshToken)
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None")
+                .domain(".glok.store")
+                .path("/")
+                .maxAge(14 * 24 * 60 * 60)
+                .build();
+
+        response.addHeader("Set-Cookie", refreshCookie.toString());
 
         response.setStatus(HttpStatus.OK.value());
+        // refreshToken 쿠키에 추가
+//        response.addCookie(createCookie("refresh", refreshToken));
+//
+//        response.setStatus(HttpStatus.OK.value());
     }
 
     // 로그인 실패 시
@@ -110,7 +125,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 쿠키가 유요한 경로
         cookie.setPath("/");
         // HTTPS 연결에서만 쿠키 전송
-//        cookie.setSecure(true);
+        cookie.setSecure(true);
         
         // XSS 공격 방지
         cookie.setHttpOnly(true);

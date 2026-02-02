@@ -1,13 +1,87 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>K-Edu Vision | 프리미엄 교육 시각화 솔루션</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Serif+KR:wght@400;700;900&family=Song+Myung&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-hanji: #FDFCF9;
+      --color-ink: #1A1A1A;
+      --color-navy: #1E293B;
+      --color-gold: #B59458;
+      --color-gold-light: #D4AF37;
+    }
+    body { 
+      font-family: 'Inter', 'Noto Sans KR', sans-serif;
+      background-color: var(--color-hanji);
+      color: var(--color-ink);
+      overflow-x: hidden;
+    }
+    .font-serif-ko { font-family: 'Noto Serif KR', 'Song Myung', serif; }
+    
+    .hanji-texture {
+      background-image: url('https://www.transparenttextures.com/patterns/paper.png');
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.03);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: var(--color-gold);
+      border-radius: 10px;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    /* K-Edu Stamp Motif */
+    .stamp-motif {
+      border: 2px solid var(--color-gold);
+      position: relative;
+    }
+    .stamp-motif::after {
+      content: '';
+      position: absolute;
+      top: 4px; left: 4px; right: 4px; bottom: 4px;
+      border: 1px solid var(--color-gold-light);
+      opacity: 0.5;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-konva": "https://esm.sh/react-konva@^19.2.1",
+    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
+    "axios": "https://esm.sh/axios@^1.13.2",
+    "@google/genai": "https://esm.sh/@google/genai@^1.36.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="hanji-texture">
+  <div id="root"></div>
+<script type="module" src="/index.tsx"></script>
+</body>
 </html>

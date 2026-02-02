@@ -10,7 +10,7 @@ controller:
       memory: 250Mi
     limits:
       #cpu: 300m #30m
-      memory: 512Mi
+      memory: 1Gi
 
 server:
   replicas: 1
@@ -23,7 +23,7 @@ server:
       cpu: 50m
       memory: 40Mi
     limits:
-      memory: 80Mi
+      memory: 250Mi
 
 repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
   replicas: 1
@@ -33,8 +33,10 @@ repoServer: #메모리 피크 보여서 메모리 리밋 3배 줌
       memory: 120Mi #40Mi
     limits:
       #cpu: 200m #6m
-      memory: 360Mi #120Mi
-
+      memory: 2Gi #120Mi
+  # env:
+  #   - name: ARGOCD_REPO_SERVER_PARALLELISM_LIMIT
+  #     value: "1"
 applicationSet:
   replicas: 0
 
@@ -44,8 +46,8 @@ redis:
       cpu: 6m
       memory: 6Mi
     limits:
-      cpu: 12m
-      memory: 12Mi
+      # cpu: 12m
+      memory: 25Mi
 dex:
   enabled: false  # SSO 비활성화
 notifications:

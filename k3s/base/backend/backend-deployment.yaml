@@ -17,15 +17,58 @@ spec:
           image: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
           ports:
             - containerPort: 8080
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: "-javaagent:/agent/opentelemetry-javaagent.jar"
+
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: "grpc"
+
+            - name: OTEL_INSTRUMENTATION_HTTP_SERVER_ROUTE_EXCLUSION_REGEX
+              value: "/actuator/.*|/health|/ready|/live"
+
+            - name: OTEL_INSTRUMENTATION_HIKARICP_ENABLED
+              value: "false"
+
+            - name: OTEL_SERVICE_NAME
+              value: "backend-service"
+
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: "http://alloy.collector.svc.cluster.local:4317"
+
+            - name: OTEL_TRACES_EXPORTER
+              value: "otlp"
+
+            - name: OTEL_METRICS_EXPORTER
+              value: "otlp"
+
+            - name: OTEL_LOGS_EXPORTER
+              value: "otlp"
+
+            - name: OTEL_EXPORTER_OTLP_INSECURE
+              value: "true"
 
           volumeMounts:
             - name: config-volume           
               mountPath: /app/config            
               readOnly: true
+            - name: agent-volume
+              mountPath: /agent
+
       volumes:
         - name: config-volume
           secret:
             secretName: backend-secret
+        - name: agent-volume
+          emptyDir: {}
+      
+      initContainers:
+        - name: otel-agent-downloader
+          image: busybox:1.36
+          command: ["wget", "-O", "/agent/opentelemetry-javaagent.jar", "https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar"]
+          volumeMounts:
+            - name: agent-volume
+              mountPath: /agent
 
       imagePullSecrets:
         - name: ecr-secret

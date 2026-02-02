@@ -23,7 +23,6 @@ public class AuthService {
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final JWTUtil jwtUtil;
-//    private final RefreshTokenRepository refreshTokenRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
 
@@ -31,15 +30,28 @@ public class AuthService {
     public void SignupProcess(SignupRequest signupRequest) {
 
         String username = signupRequest.getUsername();
+        String email = signupRequest.getEmail();
         String password = signupRequest.getPassword();
+
+
+        if (username == null || username.isBlank() ||
+                email == null || email.isBlank() ||
+                password == null || password.isBlank()) {
+            throw new IllegalArgumentException("값을 입력해주세요");
+        }
 
         //id 중복 검증
         if(userRepository.existsByUsername(username)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("해당 아이디가 존재합니다.");
+        }
+
+        if(userRepository.existsByEmail(email)) {
+            throw new IllegalArgumentException("이미 사용 중인 이메일입니다.");
         }
 
         User userEntity = User.builder()
                 .username(username)
+                .email(email)
                 .password(bCryptPasswordEncoder.encode(password))
                 .role("ROLE_USER")
                 .build();
@@ -58,12 +70,9 @@ public class AuthService {
 
 
         // 2. refreshToken 만료 검증
-        try {
-            jwtUtil.isExpired(refreshToken);
-        } catch (ExpiredJwtException e) {
+        if (jwtUtil.isExpired(refreshToken)) {
             throw new AuthException("Refresh token is expired");
         }
-
 
         // 3. refreshToken 타입 검증
         if (!"refresh".equals(jwtUtil.getCategory(refreshToken))) {

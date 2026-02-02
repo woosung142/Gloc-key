@@ -1,0 +1,31 @@
+# 가상 머신 및 OS 관련
+.DS_Store
+Thumbs.db
+
+# 빌드 결과물 및 로컬 환경 캐시
+build/
+out/
+bin/
+.gradle/
+target/
+
+# IDE 설정 파일 (IntelliJ, Eclipse, VS Code)
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.settings/
+.classpath
+.vscode/
+
+# 소스 제어
+.git
+.gitignore
+
+# 로그 파일
+*.log
+
+# 문서 및 기타
+HELP.md
+README.md

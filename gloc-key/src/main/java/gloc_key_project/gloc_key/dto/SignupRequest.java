@@ -7,5 +7,6 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class SignupRequest {
     private String username;
+    private String email;
     private String password;
 }
