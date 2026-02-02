@@ -1,0 +1,19 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: backend-error-alert
+  namespace: monitoring
+  labels:
+    release: kube-prometheus-stack
+spec:
+  groups:
+  - name: backend.rules
+    rules:
+    - alert: BackendHighErrorRate
+      expr: sum by (http_response_status_code, http_request_method, http_route) (rate(http_server_request_duration_seconds_count{http_response_status_code=~"4.*"}[5m])) > 0
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "{{ $labels.http_request_method }} 요청 오류 발생"
+        description: "경로: {{ $labels.http_route }} (코드: {{ $labels.http_response_status_code }})"

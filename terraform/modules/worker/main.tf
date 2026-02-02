@@ -61,6 +61,8 @@ resource "aws_launch_template" "worker_lt" {
     master_ip          = var.master_private_ip
     project_name       = var.project_name
     ssm_token_path     = "/${var.project_name}/k3s/node-token"
+    eip_allocation_id  = var.eip_allocation_id
+
   }))
 
   tag_specifications {

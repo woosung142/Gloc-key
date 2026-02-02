@@ -3,10 +3,14 @@ kind: Kustomization
 namespace: monitoring
 
 resources:
-  - dash-node.yaml
-  - dash-redis.yaml
-  - dash-tempo.yaml
-  
+  # dashboard
+  - dashboard/dash-node.yaml
+  - dashboard/dash-redis.yaml
+  - dashboard/dash-tempo.yaml
+  - dashboard/dash-back.yaml
+  # alert rules
+  - alert/backend-alert-rule.yaml
+
 helmCharts:
   - name: kube-prometheus-stack
     repo: https://prometheus-community.github.io/helm-charts

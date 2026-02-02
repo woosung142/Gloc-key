@@ -14,11 +14,6 @@ variable "iam_profile_name" {
   type        = string
 }
 
-variable "eip_allocation_id" {
-  description = "부팅 시 뺏어올 고정 IP(EIP)의 할당 ID"
-  type        = string
-}
-
 variable "tailscale_auth_key" {
   description = "Tailscale 인증 키 (tskey-auth-...)"
   type        = string

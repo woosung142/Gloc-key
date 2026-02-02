@@ -116,19 +116,19 @@ tempo:
     httpGet:
       path: /ready
       port: 3200
-    initialDelaySeconds: 30
-    periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
+    initialDelaySeconds: 60 #30
+    periodSeconds:  10
+    timeoutSeconds: 10 #5
+    failureThreshold: 6 #3
     successThreshold: 1
   readinessProbe:
     httpGet:
       path: /ready
       port: 3200
-    initialDelaySeconds: 20
+    initialDelaySeconds: 60 #20
     periodSeconds: 10
-    timeoutSeconds: 5
-    failureThreshold: 3
+    timeoutSeconds: 10 #5
+    failureThreshold: 6 #3
     successThreshold: 1
   storage:
     trace:
@@ -146,13 +146,13 @@ tempo:
     jaeger:
       protocols:
         grpc:
-          endpoint: 0.0.0.0:14250
+          endpoint: ""
         thrift_binary:
-          endpoint: 0.0.0.0:6832
+          endpoint: ""
         thrift_compact:
-          endpoint: 0.0.0.0:6831
+          endpoint: ""
         thrift_http:
-          endpoint: 0.0.0.0:14268
+          endpoint: ""
     opencensus:
     otlp:
       protocols:
@@ -329,9 +329,10 @@ service:
   targetPort: ""
 
 serviceMonitor:
-  enabled: false
-  interval: ""
-  additionalLabels: {}
+  enabled: true
+  interval: "30s"
+  additionalLabels:
+    release: kube-prometheus-stack
   annotations: {}
   # scrapeTimeout: 10s
 
