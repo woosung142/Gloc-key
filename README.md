@@ -12,17 +12,22 @@ AWS SageMaker를 활용한 맞춤형 AI 이미지 생성부터, 브라우저 기
 graph TD
     User([사용자]) --> Frontend[React Frontend - Vite]
     Frontend --> API[Spring Boot Backend]
-    API --> DB[(PostgreSQL)]
-    API --> Redis[(Redis)]
+    
+    subgraph AWS_VPC["AWS VPC"]
+        subgraph K3s_Cluster["K3s Kubernetes Cluster"]
+            API
+            Redis[(Redis)]
+        end
+        
+        subgraph DB_Private["AWS RDS (Private Subnet)"]
+            DB[(PostgreSQL)]
+        end
+    end
+    
     API --> S3[AWS S3 - Storage]
     API --> SageMaker[AWS SageMaker - AI Model]
     
-    subgraph Infrastructure
-        Terraform[Terraform - AWS Provisioning]
-        K3s[K3s - Kubernetes Cluster]
-    end
-    
-    API -.-> K3s
+    Terraform[Terraform] -.-> AWS_VPC
 ```
 
 ---
@@ -74,14 +79,12 @@ cd frontend
 npm install
 npm run dev
 ```
-*`.env.local` 파일에 `GEMINI_API_KEY` 설정이 필요합니다.*
 
 ### 백엔드 설정
 ```bash
 cd gloc-key
 ./gradlew bootRun
 ```
-*PostgreSQL 및 Redis 설정이 필요합니다.*
 
 ## ☁️ 인프라 배포
 
