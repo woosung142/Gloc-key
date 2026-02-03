@@ -36,6 +36,24 @@ graph TD
 <img src="./image/Gloc-key-1%20%281%29.drawio.png"/>
 
 
+
+---
+## 💰 Infrastructure Cost Analysis
+**Infracost**를 활용하여 인프라의 월간 예상 비용을 모니터링하고 있습니다. 특히 워커 노드에 **Spot Instance**를 도입하여 온디맨드 대비 약 **51%**의 비용을 절감하여 운영 중입니다.
+
+| 리소스 구분 | 세부 항목 | 사양 | 월간 비용 |
+| :--- | :--- | :--- | :--- |
+| **데이터베이스 (RDS)** | PostgreSQL Instance | db.t3.micro (Single-AZ) | $20.44 |
+| | RDS Storage (SSD) | 20GB (gp2) | $2.62 |
+| **마스터 노드 (K3s)** | EC2 Instance | t3a.small (On-demand) | $17.08 |
+| | EBS Storage | 30GB (gp3) | $2.74 |
+| **워커 노드 (K3s)** | EC2 Instance (Spot) | t3a.medium (Spot) | $16.64 (약 51%↓) |
+| | EBS Storage | 30GB (gp3) | $2.74 |
+| **네트워크** | Elastic IP (EIP) | Unused IP fee | $3.65 |
+| **도메인 (DNS)** | Route53 Hosted Zone | glok.store | $0.50 |
+| **전체 합계 (Total)** | | | **$66.41** |
+
+---
 ### 💻 Development Stack
 | 분류 | 기술 스택 |
 | :--- | :--- |
@@ -103,3 +121,5 @@ terraform apply
 - **실시간 모니터링 및 알림**: 
   - **Alertmanager**: 시스템 성능 저하 및 에러 발생 시 Slack 실시간 알림
   - **AWS NTH**: Spot 인스턴스 중단 및 교체 이벤트 감지 시 Slack 알림
+
+
