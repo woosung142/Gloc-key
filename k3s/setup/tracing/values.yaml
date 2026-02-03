@@ -39,7 +39,7 @@ tempo:
      memory: 256Mi
    limits:
     #  cpu: 2000m
-     memory: 512Mi
+     memory: 1Gi #512Mi
 
   memBallastSizeMbs: 128
   multitenancyEnabled: false
