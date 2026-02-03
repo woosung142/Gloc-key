@@ -10,13 +10,16 @@ AWS SageMaker를 활용한 맞춤형 AI 이미지 생성부터, 브라우저 기
 
 ```mermaid
 graph TD
-    User([사용자]) --> Frontend[React Frontend - Vite]
-    Frontend --> API[Spring Boot Backend]
+    User([사용자]) --> EIP["Elastic IP (Worker)"]
+    Developer([개발자]) --> VPN["VPN (Tailscale)"]
     
     subgraph AWS_VPC["AWS VPC"]
         subgraph K3s_Cluster["K3s Kubernetes Cluster"]
-            API
+            EIP --> Frontend[React Frontend]
+            Frontend --> API[Spring Boot Backend]
             Redis[(Redis)]
+            
+            VPN -.-> Management["Management (ArgoCD, Grafana)"]
         end
         
         subgraph DB_Private["AWS RDS (Private Subnet)"]
@@ -24,6 +27,8 @@ graph TD
         end
     end
     
+    API --> DB
+    API --> Redis
     API --> S3[AWS S3 - Storage]
     API --> SageMaker[AWS SageMaker - AI Model]
     
