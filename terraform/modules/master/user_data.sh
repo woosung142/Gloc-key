@@ -5,6 +5,17 @@ START_TIME=$(date +%s)
 
 echo "[Init] 시작합니다..."
 
+echo "[Swap] 스왑 파일 생성 중..."
+fallocate -l 2G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap sw 0 0' >> /etc/fstab
+
+# 스왑 적극성 낮추기 (메모리 최적화)
+sysctl -w vm.swappiness=10
+echo 'vm.swappiness=10' >> /etc/sysctl.conf
+
 # 필수 패키지 설치
 apt-get update
 apt-get install -y curl unzip

@@ -50,7 +50,7 @@ echo "[K3s] 마스터(${master_ip})에 Join 시도..."
 curl -sfL https://get.k3s.io | \
   K3S_URL=https://${master_ip}:6443 \
   K3S_TOKEN=$K3S_TOKEN \
-  INSTALL_K3S_EXEC="agent --node-name $NODE_NAME --node-label node-role.kubernetes.io/worker=true --node-label role=worker" \
+  INSTALL_K3S_EXEC="agent --node-name $NODE_NAME --node-label role=worker" \
   sh -
 
 echo "Ingress Controller(포트 80) 준비 대기 중..."
