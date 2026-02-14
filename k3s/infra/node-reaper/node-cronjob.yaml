@@ -33,6 +33,7 @@ metadata:
   namespace: kube-system
 spec:
   schedule: "*/1 * * * *" # 1분마다 실행
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:
@@ -40,7 +41,16 @@ spec:
           serviceAccountName: node-reaper
 
           nodeSelector:
-            role: worker
+            node-role.kubernetes.io/master: "true"
+          tolerations:
+          - key: "CriticalAddonsOnly"
+            operator: "Exists"
+          - key: "node-role.kubernetes.io/master"
+            operator: "Exists"
+            effect: "NoSchedule"
+          - key: "node-role.kubernetes.io/control-plane"
+            operator: "Exists"
+            effect: "NoSchedule"
 
           containers:
           - name: reaper
