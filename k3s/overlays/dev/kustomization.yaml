@@ -32,7 +32,7 @@ patches:
         template:
           spec:
             nodeSelector:
-              node-role.kubernetes.io/master: "true"
+              node-role.kubernetes.io/control-plane: "true"
             tolerations:
             - key: "CriticalAddonsOnly"
               operator: "Exists"
