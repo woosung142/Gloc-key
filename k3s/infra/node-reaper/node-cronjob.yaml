@@ -33,6 +33,7 @@ metadata:
   namespace: kube-system
 spec:
   schedule: "*/1 * * * *" # 1분마다 실행
+  concurrencyPolicy: Forbid
   jobTemplate:
     spec:
       template:

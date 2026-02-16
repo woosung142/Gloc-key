@@ -16,7 +16,15 @@ spec:
         - name: backend
           image: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
           ports:
+            - name: http
             - containerPort: 8080
+          resources:
+            requests:
+              cpu: 3m
+              memory: 560Mi
+            limits:
+              cpu: 10m
+              memory: 1Gi
           env:
             - name: JAVA_TOOL_OPTIONS
               value: "-javaagent:/agent/opentelemetry-javaagent.jar"

@@ -16,6 +16,14 @@ spec:
         - name: frontend
           image: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
           ports:
+            - name: http
             - containerPort: 80
+          resources:
+            requests:
+              cpu: 1m
+              memory: 4Mi
+            limits:
+              cpu: 10m
+              memory: 12Mi
       imagePullSecrets:
         - name: ecr-secret

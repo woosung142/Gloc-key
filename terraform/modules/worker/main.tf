@@ -18,7 +18,7 @@ data "aws_ami" "ubuntu" {
 resource "aws_launch_template" "worker_lt" {
   name_prefix   = "${var.project_name}-worker-lt"
   image_id      = data.aws_ami.ubuntu.id
-  instance_type = "t3a.medium" # 2 vCPU, 4GB RAM
+  # instance_type = "t3a.medium" # 2 vCPU, 4GB RAM
 
   block_device_mappings {
     device_name = "/dev/sda1"
@@ -39,13 +39,13 @@ resource "aws_launch_template" "worker_lt" {
     }
   }
 
-  instance_market_options {
-    market_type = "spot"
-    spot_options {
-      max_price          = "0.025" # 최대 가격 설정
-      spot_instance_type = "one-time"
-    }
-  }
+  # instance_market_options {
+  #   market_type = "spot"
+  #   spot_options {
+  #     max_price          = "0.025" # 최대 가격 설정
+  #     spot_instance_type = "one-time"
+  #   }
+  # }
 
   iam_instance_profile {
     name = var.iam_profile_name
@@ -77,20 +77,42 @@ resource "aws_launch_template" "worker_lt" {
 resource "aws_autoscaling_group" "worker_asg" {
   name                = "${var.project_name}-worker-asg"
   vpc_zone_identifier = var.subnet_ids
+  desired_capacity_type            = "units"
 
   capacity_rebalance = true # 스팟 인스턴스 교체 시 용량 재조정 활성화
   desired_capacity = 1 # 워커 1대 유지
   min_size         = 1
   max_size         = 2
-
-  launch_template {
-    id      = aws_launch_template.worker_lt.id
-    version = "$Latest"
-  }
-
+  
   tag {
     key                 = "Name"
     value               = "${var.project_name}-worker"
     propagate_at_launch = true
+  }
+
+  mixed_instances_policy {
+    instances_distribution {
+      on_demand_base_capacity                  = 0
+      on_demand_percentage_above_base_capacity = 0
+      spot_allocation_strategy                 = "price-capacity-optimized"
+      # spot_instance_pools                      = null
+    }
+
+    launch_template {
+      launch_template_specification {
+        launch_template_id      = aws_launch_template.worker_lt.id
+        version = "$Latest"
+        }
+
+      override {
+        instance_type     = "t3.medium"
+        weighted_capacity = "1"
+      }
+
+      override {
+        instance_type     = "t3a.medium"
+        weighted_capacity = "1"
+      }
+    }
   }
 }
