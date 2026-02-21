@@ -3,10 +3,10 @@ nodeSelector:
 
 resources:
   requests:
-    cpu: 5m
+    cpu: 50m
     memory: 20Mi
   limits:
-    cpu: 10m
+    cpu: 100m
     memory: 40Mi
 probes:
   httpGet:
