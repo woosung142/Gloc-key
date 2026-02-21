@@ -1,6 +1,13 @@
 nodeSelector:
   role: worker
 
+resources:
+  requests:
+    cpu: 2m
+    memory: 20Mi
+  limits:
+    cpu: 6m
+    memory: 40Mi
 probes:
   httpGet:
     path: /healthz
