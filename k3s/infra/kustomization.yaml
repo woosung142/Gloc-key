@@ -10,6 +10,8 @@ resources:
   - networking/traefik-dashboard.yaml
   - networking/monitoring-route.yaml
   - networking/ingress.yaml
+  - networking/devgress.yaml
+  - networking/mid-wip.yaml
 # ecr helper
   - ecr-helper/ecr-cronjob.yaml
 # node reaper

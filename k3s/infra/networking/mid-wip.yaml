@@ -1,0 +1,12 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: swagger-whitelist
+  namespace: traefik
+spec:
+  ipWhiteList:
+    sourceRange:
+       - 100.105.31.67
+       - 100.124.209.108
+       - 100.66.108.2
+       - 100.74.163.94

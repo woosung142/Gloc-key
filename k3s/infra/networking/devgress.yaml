@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gloc-key-ingress
+  namespace: default
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+    traefik.ingress.kubernetes.io/router.middlewares: default-swagger-whitelist@kubernetescrd
+spec:
+  tls:
+    - hosts:
+        - www.glok.store      
+      secretName: glok-tls-secret
+  rules:
+    - host: www.glok.store
+      http:
+        paths:
+          - path: /swagger-ui
+            pathType: Prefix
+            backend:
+              service:
+                name: backend-service
+                port:
+                  number: 80
