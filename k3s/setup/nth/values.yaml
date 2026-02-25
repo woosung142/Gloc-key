@@ -45,7 +45,7 @@ enableSpotInterruptionDraining: true
 enableScheduledEventDraining: true
 
 #빈도수가 잦아서 꺼버림
-enableRebalanceMonitoring: false
+enableRebalanceMonitoring: true
 enableRebalanceDraining: false
 
 enablePrometheusServer: true
