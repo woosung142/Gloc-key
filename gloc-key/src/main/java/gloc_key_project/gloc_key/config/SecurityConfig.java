@@ -101,7 +101,7 @@ public class SecurityConfig {
 
                 //접근 제어 및 혀용
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/login", "/", "/api/signup","/api/reissue", "/api/logout").permitAll()
+                        .requestMatchers("/api/login", "/", "/api/signup","/api/reissue", "/api/logout", "/v3/api-docs/**", "/swagger-ui/**").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
