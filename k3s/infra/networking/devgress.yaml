@@ -1,7 +1,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: gloc-key-ingress
+  name: dev-key-ingress
   namespace: default
   annotations:
     kubernetes.io/ingress.class: "traefik"
