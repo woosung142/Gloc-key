@@ -11,6 +11,9 @@ resources:
   # alert rules
   - alert/backend-alert-rule.yaml
 
+  # alert secret
+  - secrets/seled-alert.yaml
+
 helmCharts:
   - name: kube-prometheus-stack
     repo: https://prometheus-community.github.io/helm-charts

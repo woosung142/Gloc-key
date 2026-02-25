@@ -116,7 +116,8 @@ locals {
   ecr_repos = [
     "backend",
     "frontend",
-    "ai-sd15"
+    "ai-sd15",
+    "mcp-server"
   ]
 }
 module "ecr" {

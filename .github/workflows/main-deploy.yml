@@ -29,7 +29,9 @@ jobs:
             frontend:
               - 'frontend/**'
             ai-sd15:
-              - 'ai-models/sd15/**' 
+              - 'ai-models/sd15/**'
+            mcp-server:
+              - 'mcp/**'
 
   build-push-update:
     needs: changes
@@ -66,8 +68,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           # Docker 빌드 컨텍스트 및 Dockerfile 경로 설정
-          context: ./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}
-          file: ./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service }}/Dockerfile
+          context: ./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service == 'mcp-server' && 'mcp' || matrix.service }}
+          file: ./${{ matrix.service == 'backend' && 'gloc-key' || matrix.service == 'ai-sd15' && 'ai-models/sd15' || matrix.service == 'mcp-server' && 'mcp' || matrix.service }}/Dockerfile
           push: true
           platforms: linux/amd64
           tags: |
