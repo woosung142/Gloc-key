@@ -10,8 +10,8 @@ resources:
   - networking/traefik-dashboard.yaml
   - networking/monitoring-route.yaml
   - networking/ingress.yaml
-  - networking/devgress.yaml
-  - networking/mid-wip.yaml
+  # - networking/devgress.yaml
+  # - networking/mid-wip.yaml
 # ecr helper
   - ecr-helper/ecr-cronjob.yaml
 # node reaper
@@ -20,8 +20,8 @@ resources:
   - storage/local-path-provisioner-default.yaml
   - storage/local-path-config-default.yaml
 
-#test
-  - networking/test.yaml
+# #test
+#   - networking/test.yaml
 
 # storage
 patches:
