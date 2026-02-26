@@ -20,6 +20,9 @@ resources:
   - storage/local-path-provisioner-default.yaml
   - storage/local-path-config-default.yaml
 
+#test
+  - networking/test.yaml
+
 # storage
 patches:
   - path: storage/helper-patch.yaml
