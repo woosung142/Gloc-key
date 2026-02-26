@@ -4,6 +4,6 @@ metadata:
   name: swagger-whitelist
   namespace: default
 spec:
-  ipWhiteList:
+  ipAllowList:
     sourceRange:
        - 100.64.0.0/10
