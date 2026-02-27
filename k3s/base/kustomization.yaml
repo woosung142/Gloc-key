@@ -14,3 +14,6 @@ resources:
   - redis/redis-servicemonitor.yaml
 # secrets
   - secrets/sealed-backend.yaml
+# mcp
+  - mcp/mcp-deployment.yaml
+  - mcp/mcp-service.yaml
