@@ -58,6 +58,12 @@ dependencies {
 	implementation "software.amazon.awssdk:s3"
 	implementation "software.amazon.awssdk:sagemakerruntime"
 
+	// actuator
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+
+	//그라파나연동
+	runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+
 }
 
 tasks.named('test') {
