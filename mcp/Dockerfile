@@ -17,7 +17,7 @@ RUN chown -R mcp:mcp /app
 USER mcp
 
 # MCP HTTP 서버 포트
-EXPOSE 8000
+EXPOSE 8080
 
 # HTTP MCP 서버 실행
 CMD ["python", "main.py"]

@@ -6,7 +6,7 @@ from tools import swagger_tools, health_tools, metrics_tools,prometheus_tools
 mcp = FastMCP(
     "gloc-key",
     host="0.0.0.0",  # 호스트 주소
-    port=8000)  # 포트 번호
+    port=8080)  # 포트 번호
 
 swagger_tools.register(mcp)
 health_tools.register(mcp)
@@ -28,5 +28,5 @@ async def startup():
 if __name__ == "__main__":
     
     asyncio.run(startup())
-    print("📡 Starting MCP SSE Server...")
+    print("Starting MCP SSE Server...")
     mcp.run(transport="sse")
