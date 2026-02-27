@@ -21,3 +21,10 @@ spec:
                 name: mcp-service
                 port:
                   number: 80
+          - path: /messages
+            pathType: Prefix
+            backend:
+              service:
+                name: mcp-service
+                port:
+                  number: 80
