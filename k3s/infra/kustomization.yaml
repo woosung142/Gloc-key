@@ -10,6 +10,7 @@ resources:
   - networking/traefik-dashboard.yaml
   - networking/monitoring-route.yaml
   - networking/ingress.yaml
+  - networking/mcp-ingress.yaml
   # - networking/devgress.yaml
   # - networking/mid-wip.yaml
 # ecr helper
