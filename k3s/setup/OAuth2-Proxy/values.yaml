@@ -1,0 +1,29 @@
+nodeSelector:
+  role: worker
+
+config:
+  clientID: ""
+  clientSecret: ""
+  cookieSecret: ""
+
+  requiredSecretKeys:
+    - client-id
+    - client-secret
+    - cookie-secret
+
+  existingSecret: oauth2-proxy-creds
+
+extraArgs:
+  - --provider=google
+  - --auth-logging=true
+  - --upstream=static://200
+  - --request-logging=true
+  - --silence-ping-logging=true
+  - --skip-provider-button=true
+  - --authenticated-emails-file=/etc/oauth2-proxy/authenticated-emails
+  - --cookie-domain=.glok.store
+  
+authenticatedEmailsFile:
+  enabled: true
+  persistence: secret
+  template: "oauth2-proxy-emails"
