@@ -1,6 +1,7 @@
 package gloc_key_project.gloc_key.config;
 
 //import gloc_key_project.gloc_key.entity.RefreshToken;
+import gloc_key_project.gloc_key.filter.InternalApiTokenFilter;
 import gloc_key_project.gloc_key.jwt.JWTFilter;
 import gloc_key_project.gloc_key.jwt.JWTUtil;
 import gloc_key_project.gloc_key.jwt.LoginFilter;
@@ -33,8 +34,9 @@ public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
     private final JWTUtil jwtUtil;
-//    private final RefreshTokenRepository refreshTokenRepository;
+    private final InternalApiTokenFilter internalApiTokenFilter;
     private final RedisTemplate<String, String> redisTemplate;
+
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
@@ -101,17 +103,26 @@ public class SecurityConfig {
 
                 //접근 제어 및 혀용
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/login", "/", "/api/signup","/api/reissue", "/api/logout", "/v3/api-docs/**", "/swagger-ui/**", "/actuator/**").permitAll()
+                        .requestMatchers("/api/login", "/", "/api/signup","/api/reissue", "/api/logout", "/v3/api-docs/**", "/swagger-ui/**", "/actuator/**", "/internal/**").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
 
 
-                //JWTFilter 등록
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
-                //로그인 필터 등록 (UsernamePasswordAuthenticationFilter 대체)
+                // 내부 API 토큰 검사 필터
+                .addFilterBefore(internalApiTokenFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // JWT 인증 필터
+                .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class)
+
+                // 로그인 필터
                 .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
-//                .addFilterAt(loginFilter(), UsernamePasswordAuthenticationFilter.class)
+
+
+//                //JWTFilter 등록
+//                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
+//                //로그인 필터 등록 (UsernamePasswordAuthenticationFilter 대체)
+//                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
 
                 //세션 설정 STATELESS방식 사용
                 .sessionManagement((session) -> session
