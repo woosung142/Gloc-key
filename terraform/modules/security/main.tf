@@ -63,7 +63,15 @@ resource "aws_vpc_security_group_ingress_rule" "allow_redis_from_lambda" {
   ip_protocol = "tcp"
   to_port     = 30001
 }
+resource "aws_vpc_security_group_ingress_rule" "allow_ai_lambda" { # AI Lambda 트래픽 허용 (인바운드)
+  security_group_id = aws_security_group.main.id
+  description       = "AI Lambda traffic"
 
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 30001
+  ip_protocol = "tcp"
+  to_port     = 30001
+}
 resource "aws_vpc_security_group_ingress_rule" "allow_self" { # 보안 그룹 내의 인스턴스 간 통신 허용 (인바운드)
   security_group_id = aws_security_group.main.id
   description       = "Allow internal traffic"
@@ -423,4 +431,56 @@ resource "aws_iam_policy" "loki_s3_policy" {
 resource "aws_iam_role_policy_attachment" "loki_attach" {
   role       = aws_iam_role.worker_role.name
   policy_arn = aws_iam_policy.loki_s3_policy.arn
+}
+
+
+resource "aws_iam_role" "iam_for_prompt_lambda" {
+  name = "sqs_lambda_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+# 람다가 Redis에 접근하거나 로그를 남길 수 있도록 기본 정책 연결
+resource "aws_iam_role_policy_attachment" "prompt_lambda_logs" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# SQS 읽기/삭제 권한 부여
+resource "aws_iam_role_policy_attachment" "prompt_lambda_sqs" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+}
+
+resource "aws_iam_policy" "lambda_sqs_send_policy" {
+  name        = "lambda_sqs_send_policy"
+  description = "Allow Lambda to send messages to the next SQS queue"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "sqs:SendMessage"
+        Effect   = "Allow"
+        # 특정 큐에만 권한을 주려면 해당 SQS의 ARN을 입력하세요. 
+        # 모든 큐에 허용하려면 "*"를 사용합니다.
+        Resource = "*" 
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "prompt_lambda_sqs_send" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = aws_iam_policy.lambda_sqs_send_policy.arn
 }

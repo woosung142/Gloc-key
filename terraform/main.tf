@@ -191,3 +191,22 @@ module "s3" {
   lambda_function_name = module.lambda.lambda_name
 
 }
+
+module "sqs" {
+  source = "./modules/sqs"
+  queue_name = "prompt-queue"
+}
+
+module "sqs2" {
+  source = "./modules/sqs2"
+  queue_name = "gemini-queue"
+}
+
+module "ai-lambda" {
+  source = "./modules/ai-lamada"
+  execution_role_arn = module.security.prompt_lambda_role_arn
+  event_source_arn = module.sqs.queue_arn
+  next_sqs_url = module.sqs2.queue_url
+  backend_url = var.backend_url
+  internal_api_token = var.internal_api_token
+}
