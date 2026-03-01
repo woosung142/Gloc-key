@@ -26,6 +26,7 @@ public class ImageService {
     private final SagemakerService sagemakerService;
     private final S3Service s3Service;
     private final RedisTemplate<String, String> redisTemplate;
+    private final SqsService sqsService;
 
     // 이미지 생성 프로세스
     public ImageGenerateResponse generateImageProcess(String prompt, String username) {
@@ -38,7 +39,10 @@ public class ImageService {
         String jobId = saveTaskToRedis(username, prompt);
 
         // SageMaker 엔드포인트 비동기 호출
-        sagemakerService.call(prompt, jobId, username);
+//        sagemakerService.call(prompt, jobId, username);
+
+        // SQS 전송
+        sqsService.sqsSend(prompt, jobId, username);
 
         return new ImageGenerateResponse(jobId, "이미지 생성이 시작되었습니다.");
     }

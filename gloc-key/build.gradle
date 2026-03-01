@@ -57,6 +57,7 @@ dependencies {
 	implementation platform("software.amazon.awssdk:bom:2.25.60")
 	implementation "software.amazon.awssdk:s3"
 	implementation "software.amazon.awssdk:sagemakerruntime"
+	implementation "software.amazon.awssdk:sqs"
 
 	// actuator
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
