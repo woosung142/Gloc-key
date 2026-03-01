@@ -191,3 +191,31 @@ module "s3" {
   lambda_function_name = module.lambda.lambda_name
 
 }
+
+module "sqs" {
+  source = "./modules/sqs"
+  queue_name = "prompt-queue"
+}
+
+module "sqs2" {
+  source = "./modules/sqs2"
+  queue_name = "gemini-queue"
+}
+
+module "ai-lambda" {
+  source = "./modules/ai-lamabda"
+  execution_role_arn = module.security.prompt_lambda_role_arn
+  event_source_arn = module.sqs.queue_arn
+  next_sqs_url = module.sqs2.queue_url
+  backend_url = var.backend_url
+  internal_api_token = var.internal_api_token
+}
+
+module "gemini-lambda" {
+  source = "./modules/gem-lambda"
+  execution_role_arn = module.security.gemini_lambda_role_arn
+  event_source_arn = module.sqs2.queue_arn
+  backend_url = var.backend_url
+  internal_api_token = var.internal_api_token
+  gemini_api_key = var.gemini_api_key
+}

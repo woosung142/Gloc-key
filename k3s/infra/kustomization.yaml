@@ -11,6 +11,7 @@ resources:
   - networking/monitoring-route.yaml
   - networking/ingress.yaml
   - networking/mcp-ingress.yaml
+  - networking/lambda-ingress.yaml
   # - networking/devgress.yaml
   # - networking/mid-wip.yaml
 # ecr helper

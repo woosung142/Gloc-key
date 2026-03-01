@@ -1,0 +1,102 @@
+import os
+import json
+import logging
+import urllib.request
+import urllib.parse
+import boto3
+
+# 로깅 설정
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# 환경 변수에서 설정 가져오기
+BACKEND_URL = os.environ.get("BACKEND_URL")
+INTERNAL_API_TOKEN = os.environ.get("INTERNAL_API_TOKEN")
+NEXT_SQS_URL = os.environ.get('NEXT_SQS_URL')
+
+# sqs 클라이언트 초기화
+sqs = boto3.client('sqs')
+
+def report_failure_to_backend(job_id, error_msg):
+    """백엔드 /internal 엔드포인트로 실패 보고를 보냅니다."""
+    if not BACKEND_URL:
+        logger.error("BACKEND_URL 환경변수가 설정되지 않았습니다.")
+        return
+
+    payload = {
+        "job_id": job_id,
+        "status": "FAILED",
+        "error_msg": error_msg[:200] # 너무 길지 않게 자름
+    }
+    
+    data = json.dumps(payload).encode('utf-8')
+    
+    # 요청 생성 (Header에 토큰 포함)
+    req = urllib.request.Request(
+        BACKEND_URL, 
+        data=data, 
+        headers={
+            'Content-Type': 'application/json',
+            'X-Internal-Token': INTERNAL_API_TOKEN
+        },
+        method='POST'
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=5) as response:
+            logger.info(f"백엔드 보고 성공: {response.status}")
+    except Exception as e:
+        logger.error(f"백엔드 보고 실패: {str(e)}")
+
+def lambda_handler(event, context):
+    logger.info("--- SQS Trigger Processing Start ---")
+    
+    for record in event['Records']:
+        job_id = "unknown" # 초기화
+        try:
+            # 1. 원본 SQS 메시지 파싱
+            body = json.loads(record['body'])
+            job_id = body.get('job_id', 'unknown')
+            original_prompt = body.get('prompt')
+            username = body.get('username')
+            
+            logger.info(f"작업 시작 - JobID: {job_id}, 유저: {username}")
+
+            # -------------------------------------------------------
+            # [프롬프트 보강 로직]
+            # -------------------------------------------------------
+            enhanced_prompt = "완벽해진 프롬프롬프롬프트"
+            logger.info(f"프롬프트 보강 완료 - JobID: {job_id}")
+            # -------------------------------------------------------
+
+            next_payload = {
+                "job_id": job_id,
+                "username": username,
+                "original_prompt": original_prompt,
+                "enhanced_prompt": enhanced_prompt,
+                "status": "ENHANCED"
+            }
+
+            sqs.send_message(
+                QueueUrl= NEXT_SQS_URL,
+                MessageBody=json.dumps(next_payload, ensure_ascii=False)
+            )
+
+            logger.info(f"다음 큐로 전송 완료 - JobID: {job_id}")
+
+        except Exception as e:
+            logger.error(f"오류 발생 - JobID: {job_id}")
+            logger.error(str(e))
+            
+            # [변경 포인트] 레디스 직접 수정 대신 백엔드 API 호출
+            if job_id != "unknown":
+                report_failure_to_backend(job_id, str(e))
+            
+            # SQS 재시도를 위해 에러를 다시 던짐
+            raise e
+
+    logger.info("--- SQS Trigger Processing End ---")
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Processing Finished')
+    }
