@@ -40,4 +40,7 @@ variable "internal_api_token" {
   description = "내부 API 토큰"
   type        = string
 }
-
+variable gemini_api_key {
+  type        = string
+  description = "Gemini API 키"
+}

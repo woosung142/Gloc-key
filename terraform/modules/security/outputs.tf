@@ -41,3 +41,8 @@ output "prompt_lambda_role_arn" {
   description = "prompt lambda ARN 주소 정보"
   value       = aws_iam_role.iam_for_prompt_lambda.arn
 }
+
+output "gemini_lambda_role_arn" {
+  description = "gemini lambda ARN 주소 정보"
+  value       = aws_iam_role.iam_for_gemini_lambda.arn
+}

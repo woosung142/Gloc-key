@@ -484,3 +484,32 @@ resource "aws_iam_role_policy_attachment" "prompt_lambda_sqs_send" {
   role       = aws_iam_role.iam_for_prompt_lambda.name
   policy_arn = aws_iam_policy.lambda_sqs_send_policy.arn
 }
+
+resource "aws_iam_role" "iam_for_gemini_lambda" {
+  name = "gemini_lambda_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+# 람다가 Redis에 접근하거나 로그를 남길 수 있도록 기본 정책 연결
+resource "aws_iam_role_policy_attachment" "gemini_lambda_logs" {
+  role       = aws_iam_role.iam_for_gemini_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# SQS 읽기/삭제 권한 부여
+resource "aws_iam_role_policy_attachment" "gemini_lambda_sqs" {
+  role       = aws_iam_role.iam_for_gemini_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+}

@@ -203,10 +203,19 @@ module "sqs2" {
 }
 
 module "ai-lambda" {
-  source = "./modules/ai-lamada"
+  source = "./modules/ai-lamabda"
   execution_role_arn = module.security.prompt_lambda_role_arn
   event_source_arn = module.sqs.queue_arn
   next_sqs_url = module.sqs2.queue_url
   backend_url = var.backend_url
   internal_api_token = var.internal_api_token
+}
+
+module "gemini-lambda" {
+  source = "./modules/gem-lambda"
+  execution_role_arn = module.security.gemini_lambda_role_arn
+  event_source_arn = module.sqs2.queue_arn
+  backend_url = var.backend_url
+  internal_api_token = var.internal_api_token
+  gemini_api_key = var.gemini_api_key
 }
