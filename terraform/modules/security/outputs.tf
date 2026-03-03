@@ -46,3 +46,8 @@ output "gemini_lambda_role_arn" {
   description = "gemini lambda ARN 주소 정보"
   value       = aws_iam_role.iam_for_gemini_lambda.arn
 }
+
+output "bedrock_kb_role_arn" {
+  description = "bedrock kb 역할 ARN 주소 정보"
+  value       = aws_iam_role.bedrock_kb_role.arn
+}
