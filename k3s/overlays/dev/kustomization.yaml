@@ -4,11 +4,11 @@ resources:
   - ../../base
 images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
-    newTag: develop-96e675d
+    newTag: develop-cffee73
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
     newTag: develop-5417b6f
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/mcp-server
-    newTag: develop-96e675d
+    newTag: develop-cffee73
 patches:
   - target:
       kind: Deployment

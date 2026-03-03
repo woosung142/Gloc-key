@@ -14,8 +14,14 @@ BACKEND_URL = os.environ.get("BACKEND_URL")
 INTERNAL_API_TOKEN = os.environ.get("INTERNAL_API_TOKEN")
 NEXT_SQS_URL = os.environ.get('NEXT_SQS_URL')
 
+KNOWLEDGE_BASE_ID = os.environ.get("KNOWLEDGE_BASE_ID")
+MODEL_ARN = os.environ.get("MODEL_ARN")
+
 # sqs 클라이언트 초기화
 sqs = boto3.client('sqs')
+
+# bedrock 클라이언트 초기화
+bedrock = boto3.client("bedrock-agent-runtime")
 
 def report_failure_to_backend(job_id, error_msg):
     """백엔드 /internal 엔드포인트로 실패 보고를 보냅니다."""
@@ -62,10 +68,62 @@ def lambda_handler(event, context):
             
             logger.info(f"작업 시작 - JobID: {job_id}, 유저: {username}")
 
+
+            if not original_prompt:
+                raise ValueError("prompt is missing in SQS message")
             # -------------------------------------------------------
             # [프롬프트 보강 로직]
             # -------------------------------------------------------
-            enhanced_prompt = "완벽해진 프롬프롬프롬프트"
+            response = bedrock.retrieve_and_generate(
+                input={
+                    "text": original_prompt
+                },
+                retrieveAndGenerateConfiguration={
+                    "knowledgeBaseConfiguration": {
+                        "knowledgeBaseId": KNOWLEDGE_BASE_ID,
+                        "modelArn": MODEL_ARN,
+                        "retrievalConfiguration": {
+                            "vectorSearchConfiguration": {
+                                "numberOfResults": 3
+                            }
+                        },
+                        "generationConfiguration": {
+                            "inferenceConfig": {
+                                "textInferenceConfig": {
+                                    "maxTokens": 512,      
+                                    "temperature": 0.5,   
+                                    "topP": 0.9
+                                }
+                            },
+                            "promptTemplate": {
+                                "textPromptTemplate": """
+            You are a professional Instructional Image Designer and Prompt Engineer. Your goal is to create highly detailed, clear, and informative English prompts for educational materials.
+
+            I will provide you with search results describing specific historical and cultural scenes. Your job is to transform the user's request into a prompt that captures the authentic essence of the subject for educational purposes.
+
+            [RULES]
+            1. LANGUAGE CRITICAL: The final output must be 100% in ENGLISH ONLY.
+            2. PRIORITIZE CLARITY AND ACCURACY: Use the search results to describe the subject with historical and architectural precision.
+            3. EDUCATIONAL COMPOSITION: Focus on a clear view of the main subject.
+            4. ATMOSPHERE: Ensure lighting and weather enhance realism.
+            5. TECHNICAL QUALITY: Use ultra-high definition, 8k resolution, sharp focus, photorealistic.
+            6. NO AMBIGUITY: Provide ONLY the final English prompt text.
+
+            Here are the search results:
+            {{context}}
+
+            User's Request in Korean:
+            {{input}}
+
+            Respond ONLY with the final expanded prompt in English.
+            """
+                            }
+                        }
+                    }
+                }
+            )
+
+            enhanced_prompt = response["output"]["text"]
             logger.info(f"프롬프트 보강 완료 - JobID: {job_id}")
             # -------------------------------------------------------
 

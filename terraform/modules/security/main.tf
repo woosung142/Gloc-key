@@ -451,6 +451,29 @@ resource "aws_iam_role" "iam_for_prompt_lambda" {
     ]
   })
 }
+
+resource "aws_iam_policy" "lambda_bedrock_kb_policy" {
+  name = "lambda-bedrock-kb-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:RetrieveAndGenerate"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "prompt_lambda_bedrock_attach" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = aws_iam_policy.lambda_bedrock_kb_policy.arn
+}
+
 # 람다가 Redis에 접근하거나 로그를 남길 수 있도록 기본 정책 연결
 resource "aws_iam_role_policy_attachment" "prompt_lambda_logs" {
   role       = aws_iam_role.iam_for_prompt_lambda.name
@@ -512,4 +535,68 @@ resource "aws_iam_role_policy_attachment" "gemini_lambda_logs" {
 resource "aws_iam_role_policy_attachment" "gemini_lambda_sqs" {
   role       = aws_iam_role.iam_for_gemini_lambda.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+}
+
+
+
+# Bedrock 서비스용 IAM Role
+resource "aws_iam_role" "bedrock_kb_role" {
+  name = "AmazonBedrockExecutionRoleForKnowledgeBase"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "bedrock.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# S3 및 S3 Vectors 접근 권한 정책 연결
+resource "aws_iam_role_policy" "bedrock_kb_s3_policy" {
+  name = "BedrockKBS3Policy"
+  role = aws_iam_role.bedrock_kb_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      # 1. 문서 파일(S3) 읽기 권한
+      {
+        Action   = ["s3:GetObject", "s3:ListBucket"]
+        Effect   = "Allow"
+        Resource = [
+          var.s3_data_source_bucket_arn,
+          "${var.s3_data_source_bucket_arn}/*",
+
+          var.knowledge_base_bucket_arn,
+          "${var.knowledge_base_bucket_arn}/*"
+        ]
+      },
+      # 2. 벡터 인덱스(S3 Vectors) 검색 권한
+      {
+        Action   = [
+          "s3vectors:QueryVectors",
+          "s3vectors:GetVectors",
+          "s3vectors:DeleteVectors",
+          "s3vectors:UpdateVectors",
+          "s3vectors:PutVectors",
+          "s3vectors:GetIndex"
+        ]
+        Effect   = "Allow"
+        # 에러 메시지에 나온 인덱스 ARN을 직접 적거나 변수 처리가 필요합니다.
+        Resource = var.s3_vector_index_arn
+      },
+      # 3. 임베딩 모델 사용 권한 (Bedrock이 모델을 호출해야 하므로 필요)
+      {
+        Action   = "bedrock:InvokeModel"
+        Effect   = "Allow"
+        Resource = "arn:aws:bedrock:ap-northeast-2::foundation-model/amazon.titan-embed-text-v2:0"
+      }
+    ]
+  })
 }
