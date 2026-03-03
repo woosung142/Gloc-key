@@ -1,10 +1,13 @@
-apiVersion: traefik.io/v1alpha1
+apiVersion: traefik.containo.us/v1alpha1
 kind: Middleware
 metadata:
-  name: swagger-whitelist
-  namespace: default
+  name: google-auth
+  namespace: kube-system
 spec:
-  ipAllowList:
-    sourceRange:
-       - 100.64.0.0/10
-       - 10.0.0.0/16
+  forwardAuth:
+    address: http://oauth2-proxy.kube-system.svc.cluster.local:44180
+    
+    trustForwardHeader: true
+    # authResponseHeaders:
+    #   - "X-Auth-User"
+    #   - "X-Auth-Email"
