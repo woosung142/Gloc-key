@@ -3,3 +3,4 @@ terraform/modules/lambda/python/redis/
 terraform/modules/lambda/python/redis-*-info/
 __pycache__
 *.pyc
+main.key
