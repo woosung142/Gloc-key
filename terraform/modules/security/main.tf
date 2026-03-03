@@ -234,6 +234,26 @@ resource "aws_iam_role" "worker_role" {
   })
 }
 
+resource "aws_iam_policy" "worker_sqs_send_policy" {
+  name        = "worker_sqs_send_policy"
+  description = "Allow worker to send messages to the next SQS queue"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "sqs:SendMessage"
+        Effect   = "Allow"
+        Resource = "*" 
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "worker_sqs_send" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.worker_sqs_send_policy.arn
+}
+
 # worker에서 S3 접근을 위한 정책 생성
 resource "aws_iam_policy" "worker_s3_access" {
   name        = "${var.project_name}-worker-s3-access"
@@ -461,7 +481,10 @@ resource "aws_iam_policy" "lambda_bedrock_kb_policy" {
       {
         Effect = "Allow"
         Action = [
-          "bedrock:RetrieveAndGenerate"
+          "bedrock:Retrieve",
+          "bedrock:RetrieveAndGenerate",
+          "bedrock:InvokeModel",
+          "bedrock:GetInferenceProfile"
         ]
         Resource = "*"
       }

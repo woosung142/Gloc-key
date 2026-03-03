@@ -79,6 +79,7 @@ def lambda_handler(event, context):
                     "text": original_prompt
                 },
                 retrieveAndGenerateConfiguration={
+                    "type": "KNOWLEDGE_BASE",
                     "knowledgeBaseConfiguration": {
                         "knowledgeBaseId": KNOWLEDGE_BASE_ID,
                         "modelArn": MODEL_ARN,
@@ -97,25 +98,25 @@ def lambda_handler(event, context):
                             },
                             "promptTemplate": {
                                 "textPromptTemplate": """
-            You are a professional Instructional Image Designer and Prompt Engineer. Your goal is to create highly detailed, clear, and informative English prompts for educational materials.
+                You are a professional Instructional Image Designer and Prompt Engineer. Your goal is to create highly detailed, clear, and informative English prompts for educational materials.
 
-            I will provide you with search results describing specific historical and cultural scenes. Your job is to transform the user's request into a prompt that captures the authentic essence of the subject for educational purposes.
+                I will provide you with search results describing specific historical and cultural scenes. Your job is to transform the user's request into a prompt that captures the authentic essence of the subject for educational purposes.
 
-            [RULES]
-            1. LANGUAGE CRITICAL: The final output must be 100% in ENGLISH ONLY.
-            2. PRIORITIZE CLARITY AND ACCURACY: Use the search results to describe the subject with historical and architectural precision.
-            3. EDUCATIONAL COMPOSITION: Focus on a clear view of the main subject.
-            4. ATMOSPHERE: Ensure lighting and weather enhance realism.
-            5. TECHNICAL QUALITY: Use ultra-high definition, 8k resolution, sharp focus, photorealistic.
-            6. NO AMBIGUITY: Provide ONLY the final English prompt text.
+                [RULES]
+                1. LANGUAGE CRITICAL: The final output must be 100% in ENGLISH ONLY. Do not use any Korean in your response.
+                2. PRIORITIZE CLARITY AND ACCURACY: Use the search results to describe the subject with historical and architectural precision (e.g., specific roof shapes, pillar textures, era-specific details).
+                3. EDUCATIONAL COMPOSITION: Focus on a clear view of the main subject. Use terms like "wide shot to show full structure," "eye-level perspective for realistic scale," or "detailed close-up on textures."
+                4. ATMOSPHERE: Ensure the lighting and weather from the search results are used to enhance the reality of the educational scene.
+                5. TECHNICAL QUALITY: Use ultra-high definition, 8k resolution, sharp focus, photorealistic.
+                6. NO AMBIGUITY: Provide ONLY the final English prompt text.
 
-            Here are the search results:
-            {{context}}
+                Here are the search results in numbered order:
+                $search_results$
 
-            User's Request in Korean:
-            {{input}}
+                User's Request in Korean:
+                $query$
 
-            Respond ONLY with the final expanded prompt in English.
+                Respond ONLY with the final expanded prompt in English.
             """
                             }
                         }
