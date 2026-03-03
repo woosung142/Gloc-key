@@ -44,3 +44,13 @@ variable gemini_api_key {
   type        = string
   description = "Gemini API 키"
 }
+
+variable model_arn {
+  type        = string
+  description = "bedrock 모델 id"
+}
+
+variable knowledge_base_id {
+  type        = string
+  description = "knowledge_base id"
+} 

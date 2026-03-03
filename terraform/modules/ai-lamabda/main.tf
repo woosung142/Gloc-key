@@ -18,6 +18,8 @@ resource "aws_lambda_function" "test_lambda" {
       BACKEND_URL = var.backend_url
       INTERNAL_API_TOKEN = var.internal_api_token
       NEXT_SQS_URL = var.next_sqs_url
+      KNOWLEDGE_BASE_ID = var.knowledge_base_id
+      MODEL_ARN = var.model_arn
         }
     }
 }

@@ -18,3 +18,13 @@ variable "next_sqs_url" {
   description = "다음 SQS 큐 URL"
   type        = string
 }
+
+variable model_arn {
+  type        = string
+  description = "bedrock 모델 id"
+}
+
+variable knowledge_base_id {
+  type        = string
+  description = "knowledge_base id"
+} 

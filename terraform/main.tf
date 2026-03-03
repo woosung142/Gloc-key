@@ -213,6 +213,8 @@ module "ai-lambda" {
   next_sqs_url = module.sqs2.queue_url
   backend_url = var.backend_url
   internal_api_token = var.internal_api_token
+  model_arn = var.model_arn
+  knowledge_base_id = var.knowledge_base_id
 }
 
 module "gemini-lambda" {

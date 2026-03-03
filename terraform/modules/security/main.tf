@@ -451,6 +451,29 @@ resource "aws_iam_role" "iam_for_prompt_lambda" {
     ]
   })
 }
+
+resource "aws_iam_policy" "lambda_bedrock_kb_policy" {
+  name = "lambda-bedrock-kb-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:RetrieveAndGenerate"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "prompt_lambda_bedrock_attach" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = aws_iam_policy.lambda_bedrock_kb_policy.arn
+}
+
 # 람다가 Redis에 접근하거나 로그를 남길 수 있도록 기본 정책 연결
 resource "aws_iam_role_policy_attachment" "prompt_lambda_logs" {
   role       = aws_iam_role.iam_for_prompt_lambda.name
