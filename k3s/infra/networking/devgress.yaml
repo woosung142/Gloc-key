@@ -5,7 +5,7 @@ metadata:
   namespace: default
   annotations:
     kubernetes.io/ingress.class: "traefik"
-    traefik.ingress.kubernetes.io/router.middlewares: default-swagger-whitelist@kubernetescrd
+    traefik.ingress.kubernetes.io/router.middlewares: default-google-auth@kubernetescrd
 spec:
   tls:
     - hosts:
