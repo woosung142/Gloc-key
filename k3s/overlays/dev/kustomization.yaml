@@ -8,7 +8,7 @@ images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/frontend
     newTag: develop-5417b6f
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/mcp-server
-    newTag: develop-9a6efd2
+    newTag: develop-2a1b16b
 patches:
   - target:
       kind: Deployment
