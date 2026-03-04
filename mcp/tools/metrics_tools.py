@@ -82,19 +82,51 @@ def register(mcp: FastMCP):
         )
     
     @mcp.tool()
-    async def get_prometheus_raw_data() -> str:
-        """프로메테우스 형식 전체 메트릭 조회"""
+    async def get_prometheus_core_metrics() -> str:
+        """
+        서버/애플리케이션 핵심 메트릭만 Prometheus 형식으로 반환
 
+        반환되는 메트릭:
+        - JVM 메모리: jvm_memory_used_bytes
+        - CPU 사용량: process_cpu_seconds_total
+        - HTTP 요청 수: http_server_requests_seconds_count
+        - 디스크 사용량: diskSpace
+        - Redis 메모리: redis_memory_used_bytes
+        - DB 활성 연결 수: db_connection_active
+        - 헬스 체크: livenessState, readinessState
+        """
         try:
+            # 전체 Prometheus 메트릭 조회
             text = await get_prometheus_metrics()
-
             if not text:
                 return "Prometheus response empty"
 
-            if len(text) > 2000:
-                text = text[:2000] + "\n...(truncated)"
+            # 필터링할 메트릭 리스트
+            core_metrics = [
+                "jvm_memory_used_bytes",
+                "process_cpu_seconds_total",
+                "http_server_requests_seconds_count",
+                "diskSpace",
+                "redis_memory_used_bytes",
+                "db_connection_active",
+                "livenessState",
+                "readinessState"
+            ]
 
-            return text
+            # 라인 단위로 필터링
+            lines = text.splitlines()
+            filtered_lines = [line for line in lines if any(metric in line for metric in core_metrics)]
+
+            if not filtered_lines:
+                return "No matching metrics found"
+
+            result = "\n".join(filtered_lines)
+
+            # 너무 길면 잘라서 반환
+            if len(result) > 2000:
+                result = result[:2000] + "\n...(truncated)"
+
+            return result
 
         except Exception as e:
             return f"Prometheus fetch failed: {str(e)}"
