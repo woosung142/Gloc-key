@@ -86,7 +86,7 @@ def register(mcp: FastMCP):
     @mcp.tool()
     async def get_prometheus_core_metrics() -> str:
         """
-        서버/애플리케이션의 핵심 지표
+        서버/애플리케이션의 핵심 지표(CPU, 메모리, DB, 보안 등)를 LLM 분석용으로 반환합니다.
         """
         try:
             text = await get_prometheus_metrics()
@@ -94,19 +94,41 @@ def register(mcp: FastMCP):
                 return "Error: Prometheus metrics are empty."
 
             target_metrics = [
-                "jvm_memory_used_bytes",           # JVM 메모리 사용량
-                "process_cpu_usage",               # CPU 사용률 (0~1 사이 값)
-                "http_server_requests_seconds_count", # HTTP 요청 수
-                "disk_free_bytes",                 # 디스크 여유 공간
-                "hikaricp_connections_active",     # DB 활성 연결 (HikariCP)
-                "application_ready_time_seconds",  # 앱 기동 시간
-                "process_uptime_seconds"           # 앱 실행 시간
+                # 1. 애플리케이션 상태 및 CPU
+                "application_ready_time_seconds",
+                "process_uptime_seconds",
+                "process_cpu_usage",
+                "system_cpu_usage",
+                "system_cpu_count",
+
+                # 2. JVM 메모리 및 GC
+                "jvm_memory_used_bytes",
+                "jvm_memory_committed_bytes",
+                "jvm_gc_pause_seconds_sum",
+                "jvm_classes_loaded_classes",
+
+                # 3. HTTP 요청 및 보안
+                "http_server_requests_seconds_count",
+                "spring_security_authorizations_seconds_count",
+                "spring_security_filterchains_JWTFilter_before_total",
+
+                # 4. DB 및 쓰레드
+                "hikaricp_connections_active",
+                "hikaricp_connections_idle",
+                "hikaricp_connections_max",
+                "executor_pool_size_threads",
+                "jvm_threads_live_threads",
+                "jvm_threads_states_threads",
+
+                # 5. 시스템 리소스
+                "disk_free_bytes",
+                "disk_total_bytes"
             ]
 
             lines = text.splitlines()
             filtered_results = []
             
-            # 2. 정규표현식: 메트릭 이름으로 시작하고 뒤에 { 또는 공백이 오는 라인만 추출
+            # 정규표현식: 리스트에 정의된 이름으로 시작하는 라인만 추출
             pattern = rf"^({'|'.join(target_metrics)})(\{{|\s+)"
             
             for line in lines:
@@ -116,11 +138,10 @@ def register(mcp: FastMCP):
             if not filtered_results:
                 return "No core metrics matching the criteria were found."
 
-            # 3. LLM에게 문맥(Context)을 제공하기 위한 헤더 추가
             context_header = "--- Core Metrics for Analysis (Units: bytes, seconds, usage 0-1) ---\n"
             result = context_header + "\n".join(filtered_results)
 
-            return result[:2000] # 토큰 제한 고려
+            return result[:3000] # 분석을 위해 조금 더 넉넉하게 확장
 
         except Exception as e:
             return f"Fetch failed: {str(e)}"
