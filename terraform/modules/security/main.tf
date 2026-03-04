@@ -560,6 +560,40 @@ resource "aws_iam_role_policy_attachment" "gemini_lambda_sqs" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
 }
 
+resource "aws_iam_role_policy" "gemini_lambda_bedrock_policy" {
+  name = "gemini_lambda_bedrock_policy"
+  role = aws_iam_role.iam_for_gemini_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy" "gemini_lambda_s3_policy" {
+  name = "gemini_lambda_s3_policy"
+  role = aws_iam_role.iam_for_gemini_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject"
+        ]
+        Resource = var.s3_bucket_arn
+      }
+    ]
+  })
+}
 
 
 # Bedrock 서비스용 IAM Role

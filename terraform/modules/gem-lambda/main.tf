@@ -11,13 +11,16 @@ resource "aws_lambda_function" "gemini_lambda" {
   role          = var.execution_role_arn
   handler       = "gemini_lambda.lambda_handler"
   runtime       = "python3.12"
-  timeout       = 30
+  timeout       = 60
 
   environment {
     variables = {
       BACKEND_URL = var.backend_url
       INTERNAL_API_TOKEN = var.internal_api_token
       GEMINI_API = var.gemini_api_key
+      S3_BUCKET = var.s3_bucket_name
+      S3_PREFIX = var.s3_prefix
+      BEDROCK_IMG_MODEL_ID = var.bedrock_img_model_id
         }
     }
 }

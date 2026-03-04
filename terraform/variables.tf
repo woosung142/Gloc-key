@@ -54,3 +54,21 @@ variable knowledge_base_id {
   type        = string
   description = "knowledge_base id"
 } 
+
+
+variable s3_bucket_name {
+  type        = string
+  description = "이미지 저장용 버킷명"
+}
+variable s3_bucket_arn {
+  type        = string
+  description = "이미지 저장용 버킷 arn"
+}
+variable s3_prefix {
+  type        = string
+  description = ""
+}
+variable bedrock_img_model_id {
+  type        = string
+  description = ""
+}

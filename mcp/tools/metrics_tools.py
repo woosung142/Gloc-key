@@ -2,7 +2,7 @@ from mcp.server.fastmcp import FastMCP
 from services.metrics_service import get_metrics, get_prometheus_metrics
 from datetime import datetime
 import time
-
+import re
 
 def register(mcp: FastMCP):
 
@@ -81,20 +81,67 @@ def register(mcp: FastMCP):
             f"Uptime: {uptime_text}"
         )
     
-    @mcp.tool()
-    async def get_prometheus_raw_data() -> str:
-        """프로메테우스 형식 전체 메트릭 조회"""
+    
 
+    @mcp.tool()
+    async def get_prometheus_core_metrics() -> str:
+        """
+        서버/애플리케이션의 핵심 지표(CPU, 메모리, DB, 보안 등)를 LLM 분석용으로 반환합니다.
+        """
         try:
             text = await get_prometheus_metrics()
-
             if not text:
-                return "Prometheus response empty"
+                return "Error: Prometheus metrics are empty."
 
-            if len(text) > 2000:
-                text = text[:2000] + "\n...(truncated)"
+            target_metrics = [
+                # 1. 애플리케이션 상태 및 CPU
+                "application_ready_time_seconds",
+                "process_uptime_seconds",
+                "process_cpu_usage",
+                "system_cpu_usage",
+                "system_cpu_count",
 
-            return text
+                # 2. JVM 메모리 및 GC
+                "jvm_memory_used_bytes",
+                "jvm_memory_committed_bytes",
+                "jvm_gc_pause_seconds_sum",
+                "jvm_classes_loaded_classes",
+
+                # 3. HTTP 요청 및 보안
+                "http_server_requests_seconds_count",
+                "spring_security_authorizations_seconds_count",
+                "spring_security_filterchains_JWTFilter_before_total",
+
+                # 4. DB 및 쓰레드
+                "hikaricp_connections_active",
+                "hikaricp_connections_idle",
+                "hikaricp_connections_max",
+                "executor_pool_size_threads",
+                "jvm_threads_live_threads",
+                "jvm_threads_states_threads",
+
+                # 5. 시스템 리소스
+                "disk_free_bytes",
+                "disk_total_bytes"
+            ]
+
+            lines = text.splitlines()
+            filtered_results = []
+            
+            # 정규표현식: 리스트에 정의된 이름으로 시작하는 라인만 추출
+            pattern = rf"^({'|'.join(target_metrics)})(\{{|\s+)"
+            
+            for line in lines:
+                if re.match(pattern, line):
+                    filtered_results.append(line)
+
+            if not filtered_results:
+                return "No core metrics matching the criteria were found."
+
+            context_header = "--- Core Metrics for Analysis (Units: bytes, seconds, usage 0-1) ---\n"
+            result = context_header + "\n".join(filtered_results)
+
+            return result[:3000] # 분석을 위해 조금 더 넉넉하게 확장
 
         except Exception as e:
-            return f"Prometheus fetch failed: {str(e)}"
+            return f"Fetch failed: {str(e)}"

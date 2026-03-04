@@ -30,6 +30,8 @@ module "security" {
   knowledge_base_bucket_arn = module.s3.knowledge_base_s3_arn
   s3_vector_index_arn = module.s3.s3_vector_index_arn
   s3_data_source_bucket_arn = module.s3.s3_data_source_bucket_arn
+
+  s3_bucket_arn = var.s3_bucket_arn
 }
 # EC2가 뺏어올 고정 IP(EIP)를 미리 생성 (EC2와 별개로 존재해야 함)
 resource "aws_eip" "k3s_ip" {
@@ -224,6 +226,9 @@ module "gemini-lambda" {
   backend_url = var.backend_url
   internal_api_token = var.internal_api_token
   gemini_api_key = var.gemini_api_key
+  s3_bucket_name = var.s3_bucket_name
+  s3_prefix = var.s3_prefix
+  bedrock_img_model_id = var.bedrock_img_model_id
 }
 
 module "bedrock" {

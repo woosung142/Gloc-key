@@ -18,3 +18,16 @@ variable gemini_api_key {
   type        = string
   description = "Gemini API 키"
 }
+
+variable s3_bucket_name {
+  type        = string
+  description = ""
+}
+variable s3_prefix {
+  type        = string
+  description = ""
+}
+variable bedrock_img_model_id {
+  type        = string
+  description = ""
+}
