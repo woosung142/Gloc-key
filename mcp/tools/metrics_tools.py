@@ -2,7 +2,7 @@ from mcp.server.fastmcp import FastMCP
 from services.metrics_service import get_metrics, get_prometheus_metrics
 from datetime import datetime
 import time
-
+import re
 
 def register(mcp: FastMCP):
 
@@ -81,52 +81,46 @@ def register(mcp: FastMCP):
             f"Uptime: {uptime_text}"
         )
     
+    
+
     @mcp.tool()
     async def get_prometheus_core_metrics() -> str:
         """
-        서버/애플리케이션 핵심 메트릭만 Prometheus 형식으로 반환
-
-        반환되는 메트릭:
-        - JVM 메모리: jvm_memory_used_bytes
-        - CPU 사용량: process_cpu_seconds_total
-        - HTTP 요청 수: http_server_requests_seconds_count
-        - 디스크 사용량: diskSpace
-        - Redis 메모리: redis_memory_used_bytes
-        - DB 활성 연결 수: db_connection_active
-        - 헬스 체크: livenessState, readinessState
+        서버/애플리케이션의 핵심 지표
         """
         try:
-            # 전체 Prometheus 메트릭 조회
             text = await get_prometheus_metrics()
             if not text:
-                return "Prometheus response empty"
+                return "Error: Prometheus metrics are empty."
 
-            # 필터링할 메트릭 리스트
-            core_metrics = [
-                "jvm_memory_used_bytes",
-                "process_cpu_seconds_total",
-                "http_server_requests_seconds_count",
-                "diskSpace",
-                "redis_memory_used_bytes",
-                "db_connection_active",
-                "livenessState",
-                "readinessState"
+            target_metrics = [
+                "jvm_memory_used_bytes",           # JVM 메모리 사용량
+                "process_cpu_usage",               # CPU 사용률 (0~1 사이 값)
+                "http_server_requests_seconds_count", # HTTP 요청 수
+                "disk_free_bytes",                 # 디스크 여유 공간
+                "hikaricp_connections_active",     # DB 활성 연결 (HikariCP)
+                "application_ready_time_seconds",  # 앱 기동 시간
+                "process_uptime_seconds"           # 앱 실행 시간
             ]
 
-            # 라인 단위로 필터링
             lines = text.splitlines()
-            filtered_lines = [line for line in lines if any(metric in line for metric in core_metrics)]
+            filtered_results = []
+            
+            # 2. 정규표현식: 메트릭 이름으로 시작하고 뒤에 { 또는 공백이 오는 라인만 추출
+            pattern = rf"^({'|'.join(target_metrics)})(\{{|\s+)"
+            
+            for line in lines:
+                if re.match(pattern, line):
+                    filtered_results.append(line)
 
-            if not filtered_lines:
-                return "No matching metrics found"
+            if not filtered_results:
+                return "No core metrics matching the criteria were found."
 
-            result = "\n".join(filtered_lines)
+            # 3. LLM에게 문맥(Context)을 제공하기 위한 헤더 추가
+            context_header = "--- Core Metrics for Analysis (Units: bytes, seconds, usage 0-1) ---\n"
+            result = context_header + "\n".join(filtered_results)
 
-            # 너무 길면 잘라서 반환
-            if len(result) > 2000:
-                result = result[:2000] + "\n...(truncated)"
-
-            return result
+            return result[:2000] # 토큰 제한 고려
 
         except Exception as e:
-            return f"Prometheus fetch failed: {str(e)}"
+            return f"Fetch failed: {str(e)}"
