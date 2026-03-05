@@ -2,6 +2,9 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: monitoring
 
+commonLabels:
+  release: kube-prometheus-stack
+
 resources:
   # dashboard
   - dashboard/dash-node.yaml
@@ -14,10 +17,10 @@ resources:
   # alert secret
   - secrets/seled-alert.yaml
 
-helmCharts:
-  - name: kube-prometheus-stack
-    repo: https://prometheus-community.github.io/helm-charts
-    version: 79.6.1
-    releaseName: kube-prometheus-stack
-    valuesFile: values.yaml
-    includeCRDs: true
+# helmCharts:
+#   - name: kube-prometheus-stack
+#     repo: https://prometheus-community.github.io/helm-charts
+#     version: 79.6.1
+#     releaseName: kube-prometheus-stack
+#     valuesFile: values.yaml
+#     includeCRDs: true
