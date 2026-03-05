@@ -50,7 +50,7 @@ alertmanager: #(0.23m / 19.8) cpu/memory
       group_interval: 5m
       repeat_interval: 12h
       
-      receiver: 'system-notification'
+      receiver: 'system-notifications'
       
       routes:
       - matchers:
