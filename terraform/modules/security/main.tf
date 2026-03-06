@@ -657,3 +657,33 @@ resource "aws_iam_role_policy" "bedrock_kb_s3_policy" {
     ]
   })
 }
+
+# resource "aws_iam_policy" "grafana_logs_only" {
+#   name        = "GrafanaLogsOnlyReadPolicy"
+#   description = "Allows Grafana to read only CloudWatch Logs"
+
+#   policy = jsonencode({
+#     Version = "2012-10-17"
+#     Statement = [
+#       {
+#         Sid    = "AllowOnlyLogsAccess"
+#         Effect = "Allow"
+#         Action = [
+#           "logs:DescribeLogGroups",
+#           "logs:GetLogGroupFields",
+#           "logs:StartQuery",
+#           "logs:GetQueryResults",
+#           "logs:GetLogEvents",
+#           "logs:DescribeLogStreams"
+#         ]
+#         Resource = "*"
+#       }
+#     ]
+#   })
+# }
+
+# # 기존 워커 노드 역할에 연결
+# resource "aws_iam_role_policy_attachment" "grafana_logs_attach" {
+#   role       = aws_iam_role.worker_role.name
+#   policy_arn = aws_iam_policy.grafana_logs_only.arn
+# }
