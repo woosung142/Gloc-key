@@ -98,12 +98,13 @@ graph TD
 │   ├── bootstrap/      # 클러스터 초기 구성
 │   ├── infra/          # 인프라 관련 서비스 (Redis, DB 등)
 │   └── setup/          # 모니터링, 메시징, 보안 도구 (ArgoCD, Prometheus 등)
+├── mcp/                # Model Context Protocol (MCP) 서버 구현 (Python)
 └── terraform/          # AWS 리소스 관리를 위한 IaC 코드
 ```
 
 ---
 ## 💰 Infrastructure Cost Analysis
-**Infracost**를 활용하여 인프라의 월간 예상 비용을 모니터링하고 있습니다. 특히 워커 노드에 **Mixed Instances Policy(On-demand + Spot)**를 도입하여, 온디맨드(t3.medium) 대비 약 **56%** 의 비용 절감과 함께 다중 인스턴스 타입(t3.medium, t3a.medium) 혼합을 통한 안정적인 가용성 확보 전략을 운영 중입니다.
+**Infracost**를 활용하여 인프라의 월간 예상 비용을 모니터링하고 있습니다. 특히 워커 노드에 **100% Spot Mixed Strategy**를 도입하여, 온디맨드 대비 약 **56%** 의 비용 절감을 달성했습니다. 다중 인스턴스 타입(t3.medium, t3a.medium)을 혼합하여 스팟 인스턴스의 가용성 리스크를 최소화하고 최적의 비용 효율을 유지하고 있습니다.
 
 | 리소스 구분 | 세부 항목 | 사양 | 월간 비용 |
 | :--- | :--- | :--- | :--- |
