@@ -4,4 +4,4 @@ resources:
   - ../../base
 images:
   - name: 123644281329.dkr.ecr.ap-northeast-2.amazonaws.com/backend
-    newTag: main-d7db06d
+    newTag: main-685d344
