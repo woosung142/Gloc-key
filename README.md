@@ -2,12 +2,12 @@
 
 **Gloc-key는 AI 기반 교육자료 생성 및 편집 서비스입니다.**
 
-AWS SageMaker를 활용한 맞춤형 AI 이미지 생성부터, 브라우저 기반 에디터(React-Konva)를 통한 실시간 편집 및 히스토리 관리까지 하나의 워크플로우로 제공합니다.
+AWS Bedrock을 활용한 맞춤형 AI 이미지 생성부터, 브라우저 기반 에디터(React-Konva)를 통한 실시간 편집 및 히스토리 관리까지 하나의 워크플로우로 제공합니다.
 
 ---
 
 ## ✨ 주요 기능
-- **AI 교육자료 생성**: SageMaker를 연동한 교육용 이미지 생성
+- **AI 교육자료 생성**: Bedrock을 연동한 교육용 이미지 생성
 - **콘텐츠 히스토리 관리**: 생성된 교육자료 기록 저장 및 조회
 - **교육자료 에디터**: 브라우저 기반의 이미지 편집 도구 (React-Konva 기반)
 - **인프라 자동화**: Terraform 및 K3s를 이용한 안정적인 서비스 배포
@@ -22,7 +22,7 @@ AWS SageMaker를 활용한 맞춤형 AI 이미지 생성부터, 브라우저 기
 | **Frontend** | <img src="https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=React&logoColor=black"/> <img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=Vite&logoColor=white"/> <img src="https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=TypeScript&logoColor=white"/> <img src="https://img.shields.io/badge/Konva-EC6B2D?style=flat-square&logo=Konva&logoColor=white"/> |
 | **Backend** | <img src="https://img.shields.io/badge/Spring Boot-6DB33F?style=flat-square&logo=springboot&logoColor=white"/> <img src="https://img.shields.io/badge/Java 21-ED8B00?style=flat-square&logo=openjdk&logoColor=white"/> <img src="https://img.shields.io/badge/Spring Security-6DB33F?style=flat-square&logo=springsecurity&logoColor=white"/> <img src="https://img.shields.io/badge/JWT-000000?style=flat-square&logo=jsonwebtokens&logoColor=white"/> |
 | **Database** | <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=PostgreSQL&logoColor=white"/> <img src="https://img.shields.io/badge/Redis-DC382D?style=flat-square&logo=Redis&logoColor=white"/> |
-| **AI** | <img src="https://img.shields.io/badge/AWS SageMaker-FF9900?style=flat-square&logo=amazonsagemaker&logoColor=white"/> |
+| **AI** | <img src="https://img.shields.io/badge/AWS Bedrock-FF9900?style=flat-square&logo=amazonbedrock&logoColor=white"/> |
 
 ### ☁️ Infrastructure & DevOps Stack
 | 분류 | 기술 스택 |
@@ -39,7 +39,7 @@ AWS SageMaker를 활용한 맞춤형 AI 이미지 생성부터, 브라우저 기
 ---
 ## ☁️ Infrastructure Architecture
 
-<img src="./image/Gloc-key-1%20%281%29.drawio.png"/>
+<img src="./image/Gloc-key.drawio.png"/>
 
 ## System Workflow
 
@@ -64,8 +64,24 @@ graph TD
     
     API --> DB
     API --> Redis
-    API --> S3[AWS S3 - Storage]
-    API --> SageMaker[AWS SageMaker - AI Model]
+    API --> SQS1[SQS: prompt-queue]
+    
+    subgraph AI_Pipeline["AI Generation Pipeline (Event-Driven)"]
+        SQS1 --> LambdaA["Lambda A (ai-lambda)"]
+        LambdaA --> Bedrock1["Bedrock (Nova Micro)"]
+        Bedrock1 --- KB["Knowledge Base (RAG)"]
+        KB --- S3_Source["S3 (Original Data)"]
+        KB --- S3_Vector["S3 (Vector Bucket)"]
+        
+        LambdaA --> SQS2[SQS: gemini-queue]
+        SQS2 --> LambdaB["Lambda B (gemini-lambda)"]
+        LambdaB --> Bedrock2["Bedrock (Titan G1)"]
+        Bedrock2 --> S3_Img["S3 (Image Storage)"]
+    end
+    
+    S3_Img -- "S3 Event" --> LambdaC["Lambda C (image-status-lambda)"]
+    LambdaC --> Redis
+    LambdaC --> DB
     
     Terraform[Terraform] -.-> AWS_VPC
 ```
@@ -87,7 +103,7 @@ graph TD
 
 ---
 ## 💰 Infrastructure Cost Analysis
-**Infracost**를 활용하여 인프라의 월간 예상 비용을 모니터링하고 있습니다. 특히 워커 노드에 **Auto Scaling Group(ASG)** 과 **Spot Instance**를 도입하여, 온디맨드 대비 약 **51%** 의 비용 절감과 함께 인스턴스 중단 시의 자동 복구 구조를 운영 중입니다.
+**Infracost**를 활용하여 인프라의 월간 예상 비용을 모니터링하고 있습니다. 특히 워커 노드에 **Mixed Instances Policy(On-demand + Spot)**를 도입하여, 온디맨드(t3.medium) 대비 약 **56%** 의 비용 절감과 함께 다중 인스턴스 타입(t3.medium, t3a.medium) 혼합을 통한 안정적인 가용성 확보 전략을 운영 중입니다.
 
 | 리소스 구분 | 세부 항목 | 사양 | 월간 비용 |
 | :--- | :--- | :--- | :--- |
@@ -95,9 +111,9 @@ graph TD
 | | RDS Storage (SSD) | 20GB (gp2) | $2.62 |
 | **마스터 노드 (K3s)** | EC2 Instance | t3a.small (On-demand) | $17.08 |
 | | EBS Storage | 30GB (gp3) | $2.74 |
-| **워커 노드 (K3s)** | Auto Scaling Group (Spot) | t3a.medium (Spot) | $16.64 (약 51%↓) |
+| **워커 노드 (K3s)** | Mixed Instances (Spot) | t3.medium, t3a.medium (Spot) | $14.45 (약 56%↓) |
 | | EBS Storage | 30GB (gp3) | $2.74 |
 | **네트워크** | Elastic IP (EIP) | Unused IP fee | $3.65 |
 | **도메인 (DNS)** | Route53 Hosted Zone | glok.store | $0.50 |
-| **전체 합계 (Total)** | | | **$66.41** |
+| **전체 합계 (Total)** | | | **$64.22** |
 
