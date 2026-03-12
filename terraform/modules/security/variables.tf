@@ -44,3 +44,23 @@ variable "loki_bucket_arn" {
   description = "ARN of the Loki S3 bucket"
   type        = string
 }
+
+variable "knowledge_base_bucket_arn" {
+  description = "ARN of the Knowledge Base S3 bucket"
+  type        = string
+  
+}
+variable "s3_vector_index_arn" {
+  description = "ARN of the S3 Vectors index for Bedrock knowledge base"
+  type        = string
+}
+
+variable "s3_data_source_bucket_arn" {
+    description = "ARN of the S3 bucket used as data source for Bedrock knowledge base"
+    type        = string
+}
+
+variable "s3_bucket_arn" {
+  description = "이미지 저장용 S3 버킷"
+  type        = string
+}

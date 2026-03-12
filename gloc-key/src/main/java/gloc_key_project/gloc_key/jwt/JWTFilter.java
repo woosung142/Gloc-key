@@ -29,7 +29,8 @@ public class JWTFilter extends OncePerRequestFilter {
         // 로그인 / 재발급 / 회원가입은 JWT 검사 제외
         if (path.equals("/api/login")
                 || path.equals("/api/signup")
-                || path.equals("/api/reissue")) {
+                || path.equals("/api/reissue")
+                || path.startsWith("/internal")) {
 
             filterChain.doFilter(request, response);
             return;

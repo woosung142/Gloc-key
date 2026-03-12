@@ -63,7 +63,15 @@ resource "aws_vpc_security_group_ingress_rule" "allow_redis_from_lambda" {
   ip_protocol = "tcp"
   to_port     = 30001
 }
+resource "aws_vpc_security_group_ingress_rule" "allow_ai_lambda" { # AI Lambda 트래픽 허용 (인바운드)
+  security_group_id = aws_security_group.main.id
+  description       = "AI Lambda traffic"
 
+  cidr_ipv4   = "0.0.0.0/0"
+  from_port   = 30001
+  ip_protocol = "tcp"
+  to_port     = 30001
+}
 resource "aws_vpc_security_group_ingress_rule" "allow_self" { # 보안 그룹 내의 인스턴스 간 통신 허용 (인바운드)
   security_group_id = aws_security_group.main.id
   description       = "Allow internal traffic"
@@ -224,6 +232,26 @@ resource "aws_iam_role" "worker_role" {
       }
     ]
   })
+}
+
+resource "aws_iam_policy" "worker_sqs_send_policy" {
+  name        = "worker_sqs_send_policy"
+  description = "Allow worker to send messages to the next SQS queue"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "sqs:SendMessage"
+        Effect   = "Allow"
+        Resource = "*" 
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "worker_sqs_send" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.worker_sqs_send_policy.arn
 }
 
 # worker에서 S3 접근을 위한 정책 생성
@@ -423,4 +451,249 @@ resource "aws_iam_policy" "loki_s3_policy" {
 resource "aws_iam_role_policy_attachment" "loki_attach" {
   role       = aws_iam_role.worker_role.name
   policy_arn = aws_iam_policy.loki_s3_policy.arn
+}
+
+
+resource "aws_iam_role" "iam_for_prompt_lambda" {
+  name = "sqs_lambda_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+resource "aws_iam_policy" "lambda_bedrock_kb_policy" {
+  name = "lambda-bedrock-kb-policy"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:Retrieve",
+          "bedrock:RetrieveAndGenerate",
+          "bedrock:InvokeModel",
+          "bedrock:GetInferenceProfile"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "prompt_lambda_bedrock_attach" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = aws_iam_policy.lambda_bedrock_kb_policy.arn
+}
+
+# 람다가 Redis에 접근하거나 로그를 남길 수 있도록 기본 정책 연결
+resource "aws_iam_role_policy_attachment" "prompt_lambda_logs" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# SQS 읽기/삭제 권한 부여
+resource "aws_iam_role_policy_attachment" "prompt_lambda_sqs" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+}
+
+resource "aws_iam_policy" "lambda_sqs_send_policy" {
+  name        = "lambda_sqs_send_policy"
+  description = "Allow Lambda to send messages to the next SQS queue"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action   = "sqs:SendMessage"
+        Effect   = "Allow"
+        # 특정 큐에만 권한을 주려면 해당 SQS의 ARN을 입력하세요. 
+        # 모든 큐에 허용하려면 "*"를 사용합니다.
+        Resource = "*" 
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy_attachment" "prompt_lambda_sqs_send" {
+  role       = aws_iam_role.iam_for_prompt_lambda.name
+  policy_arn = aws_iam_policy.lambda_sqs_send_policy.arn
+}
+
+resource "aws_iam_role" "iam_for_gemini_lambda" {
+  name = "gemini_lambda_role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+# 람다가 Redis에 접근하거나 로그를 남길 수 있도록 기본 정책 연결
+resource "aws_iam_role_policy_attachment" "gemini_lambda_logs" {
+  role       = aws_iam_role.iam_for_gemini_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+# SQS 읽기/삭제 권한 부여
+resource "aws_iam_role_policy_attachment" "gemini_lambda_sqs" {
+  role       = aws_iam_role.iam_for_gemini_lambda.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaSQSQueueExecutionRole"
+}
+
+resource "aws_iam_role_policy" "gemini_lambda_bedrock_policy" {
+  name = "gemini_lambda_bedrock_policy"
+  role = aws_iam_role.iam_for_gemini_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+resource "aws_iam_role_policy" "gemini_lambda_s3_policy" {
+  name = "gemini_lambda_s3_policy"
+  role = aws_iam_role.iam_for_gemini_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:PutObject"
+        ]
+        Resource = var.s3_bucket_arn
+      }
+    ]
+  })
+}
+
+
+# Bedrock 서비스용 IAM Role
+resource "aws_iam_role" "bedrock_kb_role" {
+  name = "AmazonBedrockExecutionRoleForKnowledgeBase"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "bedrock.amazonaws.com"
+        }
+      }
+    ]
+  })
+}
+
+# S3 및 S3 Vectors 접근 권한 정책 연결
+resource "aws_iam_role_policy" "bedrock_kb_s3_policy" {
+  name = "BedrockKBS3Policy"
+  role = aws_iam_role.bedrock_kb_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      # 1. 문서 파일(S3) 읽기 권한
+      {
+        Action   = ["s3:GetObject", "s3:ListBucket"]
+        Effect   = "Allow"
+        Resource = [
+          var.s3_data_source_bucket_arn,
+          "${var.s3_data_source_bucket_arn}/*",
+
+          var.knowledge_base_bucket_arn,
+          "${var.knowledge_base_bucket_arn}/*"
+        ]
+      },
+      # 2. 벡터 인덱스(S3 Vectors) 검색 권한
+      {
+        Action   = [
+          "s3vectors:QueryVectors",
+          "s3vectors:GetVectors",
+          "s3vectors:DeleteVectors",
+          "s3vectors:UpdateVectors",
+          "s3vectors:PutVectors",
+          "s3vectors:GetIndex"
+        ]
+        Effect   = "Allow"
+        # 에러 메시지에 나온 인덱스 ARN을 직접 적거나 변수 처리가 필요합니다.
+        Resource = var.s3_vector_index_arn
+      },
+      # 3. 임베딩 모델 사용 권한 (Bedrock이 모델을 호출해야 하므로 필요)
+      {
+        Action   = "bedrock:InvokeModel"
+        Effect   = "Allow"
+        Resource = "arn:aws:bedrock:ap-northeast-2::foundation-model/amazon.titan-embed-text-v2:0"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_policy" "grafana_logs_only" {
+  name        = "GrafanaLogsOnlyReadPolicy"
+  description = "Allows Grafana to read only CloudWatch Logs"
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "AllowOnlyLogsAccess"
+        Effect = "Allow"
+        Action = [
+          "logs:DescribeLogGroups",
+          "logs:GetLogGroupFields",
+          "logs:StartQuery",
+          "logs:GetQueryResults",
+          "logs:GetLogEvents",
+          "logs:DescribeLogStreams"
+        ]
+        Resource = "*"
+      },
+{
+        Sid    = "AllowMetricsReadForGrafanaPlugin"
+        Effect = "Allow"
+        Action = [
+          "cloudwatch:ListMetrics",
+          "cloudwatch:GetMetricData",
+          "cloudwatch:GetMetricStatistics"
+        ]
+        Resource = "*"
+      }
+    ]
+  })
+}
+
+# 기존 워커 노드 역할에 연결
+resource "aws_iam_role_policy_attachment" "grafana_logs_attach" {
+  role       = aws_iam_role.worker_role.name
+  policy_arn = aws_iam_policy.grafana_logs_only.arn
 }

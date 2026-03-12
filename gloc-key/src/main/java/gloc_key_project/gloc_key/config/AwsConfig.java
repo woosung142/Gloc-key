@@ -8,6 +8,7 @@ import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
+import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sagemakerruntime.SageMakerRuntimeClient;
 
 import java.time.Duration;
@@ -49,4 +50,11 @@ public class AwsConfig {
                 .build();
     }
 
+    // sqsClient Bean 설정
+    @Bean
+    public SqsClient sqsClient() {
+        return SqsClient.builder()
+                .region(Region.of(region))
+                .build();
+    }
 }

@@ -4,10 +4,10 @@ module "vpc" {
   project_name = "gloc-key"
   vpc_cidr     = "10.0.0.0/16"
 
-  availability_zones  = ["ap-northeast-2a", "ap-northeast-2c"]
-  public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24"]
+  availability_zones  = ["ap-northeast-2a", "ap-northeast-2c", "ap-northeast-2b", "ap-northeast-2d"]
+  public_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24", "10.0.5.0/24", "10.0.6.0/24"]
 
-  private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24"]
+  private_subnet_cidrs = ["10.0.3.0/24", "10.0.4.0/24", "10.0.7.0/24", "10.0.8.0/24"]
 }
 module "security" {
   source = "./modules/security"
@@ -26,6 +26,12 @@ module "security" {
   lambda_sg_id = module.security.lambda_sg_id
   tempo_bucket_arn = module.s3.tempo_s3_arn
   loki_bucket_arn = module.s3.loki_s3_arn
+
+  knowledge_base_bucket_arn = module.s3.knowledge_base_s3_arn
+  s3_vector_index_arn = module.s3.s3_vector_index_arn
+  s3_data_source_bucket_arn = module.s3.s3_data_source_bucket_arn
+
+  s3_bucket_arn = var.s3_bucket_arn
 }
 # EC2가 뺏어올 고정 IP(EIP)를 미리 생성 (EC2와 별개로 존재해야 함)
 resource "aws_eip" "k3s_ip" {
@@ -116,7 +122,8 @@ locals {
   ecr_repos = [
     "backend",
     "frontend",
-    "ai-sd15"
+    "ai-sd15",
+    "mcp-server"
   ]
 }
 module "ecr" {
@@ -189,4 +196,45 @@ module "s3" {
   # lambda 함수 이름 가져오기
   lambda_function_name = module.lambda.lambda_name
 
+}
+
+module "sqs" {
+  source = "./modules/sqs"
+  queue_name = "prompt-queue"
+}
+
+module "sqs2" {
+  source = "./modules/sqs2"
+  queue_name = "gemini-queue"
+}
+
+module "ai-lambda" {
+  source = "./modules/ai-lamabda"
+  execution_role_arn = module.security.prompt_lambda_role_arn
+  event_source_arn = module.sqs.queue_arn
+  next_sqs_url = module.sqs2.queue_url
+  backend_url = var.backend_url
+  internal_api_token = var.internal_api_token
+  model_arn = var.model_arn
+  knowledge_base_id = var.knowledge_base_id
+}
+
+module "gemini-lambda" {
+  source = "./modules/gem-lambda"
+  execution_role_arn = module.security.gemini_lambda_role_arn
+  event_source_arn = module.sqs2.queue_arn
+  backend_url = var.backend_url
+  internal_api_token = var.internal_api_token
+  gemini_api_key = var.gemini_api_key
+  s3_bucket_name = var.s3_bucket_name
+  s3_prefix = var.s3_prefix
+  bedrock_img_model_id = var.bedrock_img_model_id
+}
+
+module "bedrock" {
+  source = "./modules/bedrock"
+  knowledge_base_bucket_arn = module.s3.knowledge_base_s3_arn
+  bedrock_kb_role_arn = module.security.bedrock_kb_role_arn
+  s3_vector_index_arn = module.s3.s3_vector_index_arn
+  s3_data_source_bucket_arn = module.s3.s3_data_source_bucket_arn
 }

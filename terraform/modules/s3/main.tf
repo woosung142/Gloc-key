@@ -150,3 +150,42 @@ resource "aws_s3_bucket_lifecycle_configuration" "loki_lifecycle" {
     }
   }
 }
+# -------------------------------------------------------------------------------
+# Bedrock KB용 벡터 버킷
+# -------------------------------------------------------------------------------
+resource "aws_s3vectors_vector_bucket" "knowledge_base_bucket" {
+  vector_bucket_name = "korean-culture-vector-bucket"
+
+  tags = {
+    Name        = "Gloc-key Knowledge Base Storage"
+  }
+}
+
+resource "aws_s3vectors_index" "korean_culture_index" {
+  index_name         = "korean-culture-index"
+  vector_bucket_name = aws_s3vectors_vector_bucket.knowledge_base_bucket.vector_bucket_name
+
+  data_type       = "float32"
+  dimension       = 512  # Titan Embed V2의 최소 차원 혹은 설정값에 맞춤
+  distance_metric = "cosine" # 일반적인 RAG에는 코사인 유사도가 유리함
+}
+
+# S3 퍼블릭 액세스 차단 (보안)
+# resource "aws_s3_bucket_public_access_block" "knowledge_base_bucket_block" {
+#   bucket = aws_s3vectors_vector_bucket.knowledge_base_bucket.vector_bucket_name
+
+#   depends_on = [aws_s3vectors_vector_bucket.knowledge_base_bucket]
+
+#   block_public_acls       = true
+#   block_public_policy     = true
+#   ignore_public_acls      = true
+#   restrict_public_buckets = true
+# }
+
+# -------------------------------------------------------------------------------
+# Bedrock KB용 원본 버킷
+# -------------------------------------------------------------------------------
+# 원본 문서를 담을 일반 S3 버킷 (데이터 소스)
+resource "aws_s3_bucket" "korean_culture_data_source" {
+  bucket = "gloc-key-culture-docs-source" 
+}

@@ -32,3 +32,43 @@ variable "PostgreSQL_password" {
   description = "Postgresql 접근 Password"
   type        = string
 }
+variable "backend_url" {
+  description = "백엔드 URL"
+  type        = string
+}
+variable "internal_api_token" {
+  description = "내부 API 토큰"
+  type        = string
+}
+variable gemini_api_key {
+  type        = string
+  description = "Gemini API 키"
+}
+
+variable model_arn {
+  type        = string
+  description = "bedrock 모델 id"
+}
+
+variable knowledge_base_id {
+  type        = string
+  description = "knowledge_base id"
+} 
+
+
+variable s3_bucket_name {
+  type        = string
+  description = "이미지 저장용 버킷명"
+}
+variable s3_bucket_arn {
+  type        = string
+  description = "이미지 저장용 버킷 arn"
+}
+variable s3_prefix {
+  type        = string
+  description = ""
+}
+variable bedrock_img_model_id {
+  type        = string
+  description = ""
+}

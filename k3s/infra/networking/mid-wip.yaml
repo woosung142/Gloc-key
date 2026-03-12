@@ -1,0 +1,13 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: google-auth
+  namespace: kube-system
+spec:
+  forwardAuth:
+    address: http://oauth2-proxy.kube-system.svc.cluster.local:44180
+    
+    trustForwardHeader: true
+    # authResponseHeaders:
+    #   - "X-Auth-User"
+    #   - "X-Auth-Email"
